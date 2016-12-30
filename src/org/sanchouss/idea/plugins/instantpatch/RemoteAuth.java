@@ -20,7 +20,7 @@ public class RemoteAuth {
 
     public JSch createJSch() throws IOException, JSchException {
         JSch jsch = new JSch();
-            jsch.addIdentity(privateKeyFile, passphrase);
+        jsch.addIdentity(privateKeyFile, passphrase);
 
         return jsch;
     }

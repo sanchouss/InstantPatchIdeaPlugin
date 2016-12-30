@@ -64,7 +64,7 @@ public class RemoteClientProxy implements RemoteClient {
                 exception.set(e);
                 e.printStackTrace();
                 Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName,
-                    host + ": Exception while creating host item:" + e.toString() + Arrays.toString(e.getStackTrace()),
+                    host + ": Exception while connecting to host:" + e.toString() + Arrays.toString(e.getStackTrace()),
                     NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
             }
         });

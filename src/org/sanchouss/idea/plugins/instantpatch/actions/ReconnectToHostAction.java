@@ -29,7 +29,13 @@ class ReconnectToHostAction extends AnAction {
     }
 
     void connect(boolean alwaysAskPassphrase) {
+        if (pluginSettings.privateKeyFile == null) {
+            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
+                    "Private key file path is not set up", NotificationType.WARNING, NotificationListener.URL_OPENING_LISTENER));
+            return;
+        }
         try {
+
             // when no connection yet or invalid connection
             if (alwaysAskPassphrase || pluginSettings.passphrase == null || pluginSettings.passphrase.isEmpty()) {
                 pluginSettings.passphrase = Messages.showPasswordDialog("Enter passphrase for the private key", shortName);

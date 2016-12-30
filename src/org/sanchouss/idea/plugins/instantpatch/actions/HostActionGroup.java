@@ -42,7 +42,7 @@ class HostActionGroup extends com.intellij.openapi.actionSystem.DefaultActionGro
             reconnect = new ReconnectToHostAction(pluginSettings, proxy);
             add(reconnect);
         } catch (Exception e) {
-            add(new DumbAction(host.getHostname() + ": Exception while creating host item. See stderr..."));
+            add(new DumbAction(host.getHostname() + ": Exception while creating host menu group item. See stderr..."));
         } finally {
             this.remoteClientProxy = proxy;
             this.reconnectAction = Optional.ofNullable(reconnect);
