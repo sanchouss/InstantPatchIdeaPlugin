@@ -19,8 +19,8 @@ separately and is not stored anywhere.
 Installation
 -------------------------------------------------------------------------------
 
-This plugin is to be published on the
-[JetBrains Plugin Repository](https://plugins.jetbrains.com/plugin)
+This plugin is published on the
+[JetBrains Plugin Repository](https://plugins.jetbrains.com/idea/plugin/9373)
 
 Usage
 -------------------------------------------------------------------------------
