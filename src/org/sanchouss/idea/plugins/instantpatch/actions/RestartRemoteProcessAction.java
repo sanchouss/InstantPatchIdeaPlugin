@@ -18,10 +18,12 @@ class RestartRemoteProcessAction extends AnAction {
     private static final String actionTitle = "Restarting remote processes";
     private final RemoteProcessRunnerShell runner;
     private final RemoteClient remoteClient;
+    private Process process;
 
     public RestartRemoteProcessAction(RemoteClient remoteClient, Process process) {
         super("Restart Remote Process");
         this.remoteClient = remoteClient;
+        this.process = process;
         this.runner = remoteClient.createRunnerShell(process.getProcessDirectory(), process.getProcessName());
     }
 
@@ -41,8 +43,8 @@ class RestartRemoteProcessAction extends AnAction {
         @Override
         public void run() {
             try {
-                runner.exec("sudo " + runner.processDirectory + runner.processName + " stop");
-                runner.exec("sudo " + runner.processDirectory + runner.processName + " start");
+                runner.exec(process.getProcessStopCommand());
+                runner.exec(process.getProcessStartCommand());
                 Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
                     runner.processDirectory + runner.processName + " restarted", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
 

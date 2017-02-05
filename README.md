@@ -5,14 +5,16 @@ channels.
 Description
 -------------------------------------------------------------------------------
 
-You may select Java classes which you wish to be uploaded onto remote server. Appropriate .class files will be located
+Select Java classes and upload them onto remote server right from IntelliJ Idea. Restart java process from IDE afterwards.
+
+Select *.java files which you just changed and compiled; appropriate .class files will be located
 in the output directory of IntelliJ Idea IDE and copied to the remote server. Target directory for the .class files is
-specified in the plugin's configuration file. You must have write permissions to that directory on remote server.
+specified in the plugin's configuration file (you must have write permissions to that directory on remote server).
 Non-Java (resource) files may be copied as well if selected.
-After remote directory is patched with new .class files, you can restart remote process from the plugin.
-You may want to update the process startup shell script including the catalog with fresh .class files as the first entry
-in CLASSPATH passed to JVM. If that file is in the system catalog, it can be copied into remote temporary directory
-you have write access into, and then sudo-copied into the target system directory.
+After remote directory is patched with new .class files, you can restart remote process from the plugin's menu.
+You may want to patch the process startup shell script as well in order to include the patch catalog with fresh .class files as the first entry
+in CLASSPATH variable passed to JVM. If that shell file resides in the system catalog, it still can be overwritten:
+first copied into remote temporary directory you have write access into, and then sudo-copied into the target system directory.
 You will need to specify path to your private key file for connecting to the remote host securely. Passphrase is asked
 separately and is not stored anywhere.
 

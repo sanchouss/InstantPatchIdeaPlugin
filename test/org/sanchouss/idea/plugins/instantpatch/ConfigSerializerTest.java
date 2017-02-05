@@ -38,6 +38,8 @@ public class ConfigSerializerTest {
             Process proc = new Process();
             proc.setProcessName("server-process1");
             proc.setProcessDirectory("/usr/bin/");
+            proc.setProcessStartCommand("server-process1 start");
+            proc.setProcessStopCommand("server-process1 stop");
             proc.setClassFilesDirectory(classFilesDir);
             proc.setRemoteDirectories(etcFilesDirs);
             proc.setTemporaryDirectory(tempDir);

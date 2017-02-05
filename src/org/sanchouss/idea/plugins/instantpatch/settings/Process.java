@@ -16,6 +16,14 @@ public class Process {
      */
     private String processDirectory;
     /**
+     * Remote process' start command
+     */
+    private String processStartCommand;
+    /**
+     * Remote process' stop command
+     */
+    private String processStopCommand;
+    /**
      * Remote directory which is in the CLASSPATH of the remote target process
      */
     private String classFilesDirectory;
@@ -70,6 +78,8 @@ public class Process {
         return "Process{" +
             "processName='" + processName + '\'' +
             ", processDirectory='" + processDirectory + '\'' +
+            ", processStartCommand='" + processStartCommand+ '\'' +
+            ", processStopCommand='" + processStopCommand + '\'' +
             ", classFilesDirectory='" + classFilesDirectory + '\'' +
             ", remoteDirectories='" + remoteDirectories + '\'' +
             '}';
@@ -81,6 +91,22 @@ public class Process {
 
     public void setTemporaryDirectory(String temporaryDirectory) {
         this.temporaryDirectory = temporaryDirectory;
+    }
+
+    public String getProcessStartCommand() {
+        return processStartCommand;
+    }
+
+    public void setProcessStartCommand(String processStartCommand) {
+        this.processStartCommand = processStartCommand;
+    }
+
+    public String getProcessStopCommand() {
+        return processStopCommand;
+    }
+
+    public void setProcessStopCommand(String processStopCommand) {
+        this.processStopCommand = processStopCommand;
     }
 }
 
