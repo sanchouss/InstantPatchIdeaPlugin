@@ -10,11 +10,14 @@ Select Java classes and upload them onto remote server right from IntelliJ Idea.
 Select *.java files which you just changed and compiled; appropriate .class files will be located
 in the output directory of IntelliJ Idea IDE and copied to the remote server. Target directory for the .class files is
 specified in the plugin's configuration file (you must have write permissions to that directory on remote server).
+
 Non-Java (resource) files may be copied as well if selected.
-After remote directory is patched with new .class files, you can restart remote process from the plugin's menu.
-You may want to patch the process startup shell script as well in order to include the patch catalog with fresh .class files as the first entry
+
+After remote patch directory is filled with new .class files, you can restart remote process from the plugin's menu.
+You may want to modify the process startup shell script as well. The patch catalog with fresh .class files is better to be the very first entry
 in CLASSPATH variable passed to JVM. If that shell file resides in the system catalog, it still can be overwritten:
 first copied into remote temporary directory you have write access into, and then sudo-copied into the target system directory.
+
 You will need to specify path to your private key file for connecting to the remote host securely. Passphrase is asked
 separately and is not stored anywhere.
 
@@ -55,6 +58,8 @@ Sample plugin configuration file:
                           <classFilesDirectory>/home/sanchouss/patches/</classFilesDirectory>
                           <processDirectory>/usr/bin/</processDirectory>
                           <processName>server-process1</processName>
+                          <processStartCommand>server-process1 start</processStartCommand>
+                          <processStopCommand>server-process1 stop</processStopCommand>
                           <remoteDirectories>/usr/bin/</remoteDirectories>
                           <remoteDirectories>/var/lib/</remoteDirectories>
                           <temporaryDirectory>/home/sanchouss/tmp/</temporaryDirectory>
@@ -77,6 +82,8 @@ Sample plugin configuration file:
                           <classFilesDirectory>/home/sanchouss/patches/</classFilesDirectory>
                           <processDirectory>/usr/bin/</processDirectory>
                           <processName>server-process1</processName>
+                          <processStartCommand>server-process1 start</processStartCommand>
+                          <processStopCommand>server-process1 stop</processStopCommand>
                           <remoteDirectories>/usr/bin/</remoteDirectories>
                           <remoteDirectories>/var/lib/</remoteDirectories>
                           <temporaryDirectory>/home/sanchouss/tmp/</temporaryDirectory>
