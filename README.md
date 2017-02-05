@@ -68,6 +68,8 @@ Sample plugin configuration file:
                           <classFilesDirectory>/home/sanchouss/patches/</classFilesDirectory>
                           <processDirectory>/usr/bin/</processDirectory>
                           <processName>server-process2</processName>
+                          <processStartCommand>server-process2 start</processStartCommand>
+                          <processStopCommand>server-process2 stop</processStopCommand>
                           <remoteDirectories>/usr/bin/</remoteDirectories>
                           <remoteDirectories>/var/lib/</remoteDirectories>
                           <temporaryDirectory>/home/sanchouss/tmp/</temporaryDirectory>
@@ -92,6 +94,8 @@ Sample plugin configuration file:
                           <classFilesDirectory>/home/sanchouss/patches/</classFilesDirectory>
                           <processDirectory>/usr/bin/</processDirectory>
                           <processName>server-process2</processName>
+                          <processStartCommand>server-process2 start</processStartCommand>
+                          <processStopCommand>server-process2 stop</processStopCommand>
                           <remoteDirectories>/usr/bin/</remoteDirectories>
                           <remoteDirectories>/var/lib/</remoteDirectories>
                           <temporaryDirectory>/home/sanchouss/tmp/</temporaryDirectory>
