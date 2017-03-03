@@ -25,7 +25,7 @@ Installation
 -------------------------------------------------------------------------------
 
 This plugin is published on the
-[JetBrains Plugin Repository](https://plugins.jetbrains.com/idea/plugin/9373)
+[JetBrains Plugin Repository](https://plugins.jetbrains.com/plugin/9373-instant-patch-remote-java-process)
 
 Usage
 -------------------------------------------------------------------------------
