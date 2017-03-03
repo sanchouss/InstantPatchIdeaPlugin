@@ -41,7 +41,8 @@ public class InstantPatchRemotePluginRegistration implements ApplicationComponen
     // the plugin.xml file, this method is called on IDEA start-up.
     public void initComponent() {
         ActionManager am = ActionManager.getInstance();
-        Notifications.Bus.notify(new Notification(notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName, "Loading started...", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
+        // for debugging
+//        Notifications.Bus.notify(new Notification(notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName, "Loading started...", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
 
         try {
             final RemoteOperationRootGroup rootAction = new RemoteOperationRootGroup(pluginSettings);
@@ -58,7 +59,8 @@ public class InstantPatchRemotePluginRegistration implements ApplicationComponen
             ProjectViewPopupMenuGroup.add(new Separator(), Constraints.FIRST);
             ProjectViewPopupMenuGroup.add(rootAction, Constraints.FIRST);
 
-            Notifications.Bus.notify(new Notification(notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName, "Loading finished...", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
+            // for debugging
+//            Notifications.Bus.notify(new Notification(notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName, "Loading finished...", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
         } catch (Exception e) {
             System.err.println("Exception happened while registering root action group: " + e);
             Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName,

@@ -1,10 +1,10 @@
 package org.sanchouss.idea.plugins.instantpatch;
 
+import com.intellij.openapi.util.text.StringUtil;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
-import io.netty.util.internal.StringUtil;
 import org.junit.Test;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteAuth;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClientImpl;
@@ -27,7 +27,7 @@ public class RemoteClientImplTest {
         JSch jsch = new JSch();
         String passphrase = "";
         jsch.addIdentity(privateKey,
-            StringUtil.isNullOrEmpty(passphrase) ?
+            StringUtil.isEmpty(passphrase) ?
             null : passphrase);
 
         Session session = jsch.getSession(user, host, port);
