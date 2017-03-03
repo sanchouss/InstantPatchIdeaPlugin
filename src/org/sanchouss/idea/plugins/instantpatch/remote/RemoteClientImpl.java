@@ -1,7 +1,7 @@
 package org.sanchouss.idea.plugins.instantpatch.remote;
 
+import com.intellij.openapi.util.text.StringUtil;
 import com.jcraft.jsch.*;
-import io.netty.util.internal.StringUtil;
 
 import java.io.*;
 import java.util.concurrent.CountDownLatch;
@@ -45,7 +45,7 @@ public class RemoteClientImpl implements RemoteClient {
         this.port = port;
 
         this.jsch = new JSch();
-        jsch.addIdentity(remoteAuth.privateKeyFile, StringUtil.isNullOrEmpty(remoteAuth.passphrase) ?
+        jsch.addIdentity(remoteAuth.privateKeyFile, StringUtil.isEmpty(remoteAuth.passphrase) ?
             null : remoteAuth.passphrase);
 
         session = jsch.getSession(user, host, port);
