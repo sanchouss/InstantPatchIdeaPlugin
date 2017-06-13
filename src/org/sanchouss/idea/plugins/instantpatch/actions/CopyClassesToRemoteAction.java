@@ -30,6 +30,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
+
+import static org.sanchouss.idea.plugins.instantpatch.Checks.SLASH_LINUX_STYLE;
 
 
 /**
@@ -41,7 +44,8 @@ class CopyClassesToRemoteAction extends AnAction {
     private final RemoteProcessSftpPatcher patcher;
 
     private final RemoteProcessRunnerShell runnerShell;
-    private final HashSet<String> allowedResources = new HashSet<>(Arrays.asList(".xml", ".json", ".properties",".csv", ".sh"));
+    private final HashSet<String> allowedResources = new HashSet<>(
+        Arrays.asList(".xml", ".json", ".properties",".csv", ".sh", ".sql"));
     private final String actionTitle = "Copying classes to remote";
     private final RemoteClient remoteClient;
 
@@ -62,7 +66,7 @@ class CopyClassesToRemoteAction extends AnAction {
             final VirtualFile[] files = e.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY);
 
             final LinkedList<VirtualFile> filesToCopy = new LinkedList<>(Arrays.asList(files));
-            System.out.println("Got " + filesToCopy.size() + " items to copy chosen initially");
+            System.out.println("Got " + filesToCopy.size() + " classes to copy chosen initially");
             System.out.println("Allowed to copy resources are: " + allowedResources);
             final ProjectFileIndex index =  ProjectRootManager.getInstance(project).getFileIndex();
             final HashSet<String> filesArrangedForCopy = new HashSet<>();
@@ -83,8 +87,8 @@ class CopyClassesToRemoteAction extends AnAction {
                     try {
                         // look up for the compiled .class files matching passed .java files; prepare jobs to copy compiled files
 //                        final List<String> pkg = getPackageDirectory(packagePath);
-                        final String outputClassesRelativeDir = packagePath; //StringUtils.join(pkg, "/");
-                        final String outputClassesLocalDir = moduleOutputPath + "/" + outputClassesRelativeDir;
+                        final String outputClassesRelativeDir = packagePath; //StringUtils.join(pkg, SLASH_LINUX_STYLE);
+                        final String outputClassesLocalDir = moduleOutputPath + SLASH_LINUX_STYLE + outputClassesRelativeDir;
 
                         final List<String> classes = getClassFilesForJava(outputClassesLocalDir, file);
                         if (classes.size() == 0) {
@@ -103,7 +107,7 @@ class CopyClassesToRemoteAction extends AnAction {
                     } catch (NotJavaResourceException njre) {
                         // todo: locate resource ouput directory and take files from output dir
 //                        final String outputResourceRelativePath = findOutResourceRelativePath(packagePath);
-//                        final String outputResourcesLocalDir = moduleOutputPath + "/" + outputResourceRelativePath;
+//                        final String outputResourcesLocalDir = moduleOutputPath + SLASH_LINUX_STYLE + outputResourceRelativePath;
                         final String outputResourceRelativePath = packagePath;
                         final String outputResourcesLocalDir = file.getParent().getPath();
                         // look for allowed resources files
@@ -124,12 +128,18 @@ class CopyClassesToRemoteAction extends AnAction {
                 }
             }
 
-            remoteClient.enqueue(new CopyClassesToRemoteCommand(jobs));
-
+            if (jobs.jobs.size() == 0) {
+                Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
+                    "No files are to be copied. Allowed resources are .java and the following files: " +
+                        allowedResources.stream().map(s -> "*" + s).collect(Collectors.joining(", ")),
+                    NotificationType.WARNING, NotificationListener.URL_OPENING_LISTENER));
+            } else {
+                remoteClient.enqueue(new CopyClassesToRemoteCommand(jobs));
+            }
         } catch (Exception e1) {
             e1.printStackTrace();
             Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
-                e1.toString(), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
+                e1.getMessage(), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
         }
     }
 
@@ -139,7 +149,7 @@ class CopyClassesToRemoteAction extends AnAction {
         if (resourcesMarkerPos == -1)
             return null;
         String res = subModuleRelativePath.substring(resourcesMarkerPos + resourcesMarker.length());
-        return res.startsWith("/") ? res.substring(1) : res;
+        return res.startsWith(SLASH_LINUX_STYLE) ? res.substring(1) : res;
     }
 
     private static class RemoteJobCopy {
@@ -190,7 +200,7 @@ class CopyClassesToRemoteAction extends AnAction {
             throw new IllegalArgumentException(outClassesDir + " filename must be a directory");
         }
         File relatedClasses[] = outClassesDirFile.listFiles(new FilenameFilter() {
-
+            //todo: there are more cases: .java may produce other classes than public and its inners
             @Override
             public boolean accept(File dir, String name) {
                 return (name.equals(className) || name.startsWith(nestedClassPrefix));

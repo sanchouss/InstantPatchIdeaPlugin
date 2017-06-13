@@ -15,3 +15,7 @@
 ## 0.0.4 - 2017-03-03
 
 - Recognize an empty passphrase as its absence
+
+## 0.0.5 - 2017-06-13
+
+- Informative error messages when remote command fails

@@ -29,7 +29,7 @@ public class RemoteProcessRunnerShell {
             System.out.println("EXEC: " + "Executing command: " + cmdToRun);
             // send the cmd to channel, do not wait for the response here
             remoteClient.sendShellCommand(cmdToRun, 3000);
-        });
+        }, "Can not execute shell command " + cmdToRun);
 /*
         remoteClient.channelShellInputs = new InputStream[] {channelShell.getInputStream(), channelShell.getExtInputStream()};
 

@@ -1,18 +1,27 @@
 package org.sanchouss.idea.plugins.instantpatch;
 
-import com.intellij.openapi.ui.Messages;
-import org.sanchouss.idea.plugins.instantpatch.actions.RemoteOperationRootGroup;
-import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettings;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.components.*;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.Constraints;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.Separator;
+import com.intellij.openapi.components.ApplicationComponent;
+import com.intellij.openapi.components.PersistentStateComponent;
+import com.intellij.openapi.components.State;
+import com.intellij.openapi.components.Storage;
+import com.intellij.openapi.components.StoragePathMacros;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.sanchouss.idea.plugins.instantpatch.actions.RemoteOperationRootGroup;
+import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettings;
 
 import java.io.File;
+
+import static org.sanchouss.idea.plugins.instantpatch.Checks.SLASH_LINUX_STYLE;
 
 /**
  * Created by Alexander Perepelkin
@@ -20,7 +29,7 @@ import java.io.File;
  */
 // todo: remove platform-dependant path separator
 @State(name="org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePlugin",
-        storages = {@Storage(id = "default", file = "$APP_CONFIG$"+"/" +"InstantPatchRemotePluginRegistration.xml")
+        storages = {@Storage(id = "default", file = "$APP_CONFIG$"+ SLASH_LINUX_STYLE +"InstantPatchRemotePluginRegistration.xml")
                 /*@Storage(StoragePathMacros.APP_CONFIG)*/})
 public class InstantPatchRemotePluginRegistration implements ApplicationComponent,
         PersistentStateComponent<PluginSettings> {

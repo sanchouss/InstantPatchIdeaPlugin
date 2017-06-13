@@ -12,9 +12,9 @@ import com.jcraft.jsch.Session;
 public interface RemoteClient {
     Session getSession();
 
-    void arrangeSftpCommand(SftpCommand<ChannelSftp> sftpCommand);
+    void arrangeSftpCommand(SftpCommand<ChannelSftp> sftpCommand, String errorMsg);
 
-    void arrangeShellCommand(ShellCommand<ChannelShell> shellCommand);
+    void arrangeShellCommand(ShellCommand<ChannelShell> shellCommand, String errorMsg);
 
     void disconnect();
 

@@ -148,37 +148,33 @@ public class RemoteClientProxy implements RemoteClient {
     }
 
     @Override
-    public void arrangeSftpCommand(SftpCommand<ChannelSftp> sftpCommand) {
-        // todo: handle notifications after bad connection
+    public void arrangeSftpCommand(SftpCommand<ChannelSftp> sftpCommand, String errorMsg) {
         if (!isConnectedWell()) {
             final PluginSettings pluginSettings = pluginSettingsCallback.getPluginSettings(false);
             reconnect(new RemoteAuth(pluginSettings.privateKeyFile, pluginSettings.passphrase));
         }
-//        executorService.submit(() -> {
-            try {
-                sftpCommand.accept(this.getChannelSftp());
-            } catch (SftpException e) {
-                exception.set(e);
-                throw new RuntimeException(e);
-            }
-//        });
+
+        try {
+            sftpCommand.accept(this.getChannelSftp());
+        } catch (SftpException e) {
+            exception.set(e);
+            throw new RuntimeException("SFTP error: " + e + "; " + errorMsg, e);
+        }
     }
 
     @Override
-    public void arrangeShellCommand(ShellCommand<ChannelShell> shellCommand) {
+    public void arrangeShellCommand(ShellCommand<ChannelShell> shellCommand, String errorMsg) {
         if (!isConnectedWell()) {
             final PluginSettings pluginSettings = pluginSettingsCallback.getPluginSettings(false);
             reconnect(new RemoteAuth(pluginSettings.privateKeyFile, pluginSettings.passphrase));
         }
 
-//        executorService.submit(() -> {
-            try {
-                shellCommand.accept(this.getChannelShell());
-            } catch (SftpException e) {
-                exception.set(e);
-                throw new RuntimeException(e);
-            }
-//        });
+        try {
+            shellCommand.accept(this.getChannelShell());
+        } catch (SftpException e) {
+            exception.set(e);
+            throw new RuntimeException("Shell error: " + e + "; " + errorMsg, e);
+        }
     }
 
     public String getHost() {

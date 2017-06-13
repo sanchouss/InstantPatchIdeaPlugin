@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 
+import static org.sanchouss.idea.plugins.instantpatch.Checks.SLASH_LINUX_STYLE;
+
 
 /**
  * Copies specific files chosen in IDE to the selected remote directory.
@@ -36,6 +38,8 @@ class CopyFilesToRemotePathAction extends AnAction {
     public CopyFilesToRemotePathAction(RemoteClient remoteClient, String remoteDirectory, String tempDirectory) {
         super(remoteDirectory);
         this.remoteClient = remoteClient;
+        if (!remoteDirectory.endsWith(SLASH_LINUX_STYLE))
+            remoteDirectory += SLASH_LINUX_STYLE;
         this.remoteDirectory = remoteDirectory;
         this.tmpDir = tempDirectory;
         this.patcher = remoteClient.createPatcher(tmpDir);
@@ -67,7 +71,7 @@ class CopyFilesToRemotePathAction extends AnAction {
 
         public void run() {
             try {
-                System.out.println("Got " + filesToCopy.size() + " items to copy chosen initially");
+                System.out.println("Got " + filesToCopy.size() + " files to copy chosen initially");
                 int copied = 0, failed = 0;
                 while (!filesToCopy.isEmpty()) {
                     final VirtualFile file = filesToCopy.removeFirst();
@@ -83,6 +87,11 @@ class CopyFilesToRemotePathAction extends AnAction {
                             runner.exec("tr -d '\\r' < " + tmpFile + " > " + tmpFileLF);
                             // todo: make backup of original once only - check for existing backup
                             final String targetFile = remoteDirectory + file.getName();
+                            runner.exec("cp " + targetFile + " " + targetFile + ".bak");
+                            runner.exec("cp -f " + tmpFileLF + " " + targetFile);
+
+                            // here try to cp twice: with standard perms and upgraded. todo - find cleaner way
+                            // (sudo may require password to enter)
                             runner.exec("sudo cp " + targetFile + " " + targetFile + ".bak");
                             runner.exec("sudo cp -f " + tmpFileLF + " " + targetFile);
                             ++copied;

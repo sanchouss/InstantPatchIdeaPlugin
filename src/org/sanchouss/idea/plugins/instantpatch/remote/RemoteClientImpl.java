@@ -226,20 +226,20 @@ public class RemoteClientImpl implements RemoteClient {
     }
 
     @Override
-    public void arrangeSftpCommand(SftpCommand<ChannelSftp> sftpCommand) {
+    public void arrangeSftpCommand(SftpCommand<ChannelSftp> sftpCommand, String errorMsg) {
         try {
             sftpCommand.accept(channelSftp);
         } catch (SftpException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("SFTP error: " + e + "; " + errorMsg, e);
         }
     }
 
     @Override
-    public void arrangeShellCommand(ShellCommand<ChannelShell> shellCommand) {
+    public void arrangeShellCommand(ShellCommand<ChannelShell> shellCommand, String errorMsg) {
         try {
             shellCommand.accept(channelShell);
         } catch (SftpException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Shell error: " + e + "; " + errorMsg, e);
         }
     }
 }
