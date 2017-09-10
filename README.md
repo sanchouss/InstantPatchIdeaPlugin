@@ -105,6 +105,15 @@ Sample plugin configuration file:
           </hostsList>
       </configuration>
 
+FAQ
+-------------------------------------------------------------------------------
+1. Could not connect to server using this plugin?
+
+If you are connecting via IPv6 network, try to add following VM Options into Idea:
+(Help → Edit Custom VM Options)
+
+      -Djava.net.preferIPv6Addresses=true
+      -Djava.net.preferIPv4Stack=false
 
 Change log
 -------------------------------------------------------------------------------
