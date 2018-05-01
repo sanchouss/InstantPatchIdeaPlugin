@@ -1,6 +1,7 @@
 package org.sanchouss.idea.plugins.instantpatch.remote;
 
 import com.jcraft.jsch.*;
+import io.netty.util.internal.StringUtil;
 
 import java.io.*;
 import java.util.concurrent.CountDownLatch;
@@ -43,14 +44,16 @@ public class RemoteClientImpl implements RemoteClient {
         this.user = user;
         this.port = port;
 
-        this.jsch = remoteAuth.createJSch();
+        this.jsch = new JSch();
+        jsch.addIdentity(remoteAuth.privateKeyFile, StringUtil.isNullOrEmpty(remoteAuth.passphrase) ?
+            null : remoteAuth.passphrase);
 
         session = jsch.getSession(user, host, port);
         System.out.println("session created.");
 
         java.util.Properties config = new java.util.Properties();
         config.put("StrictHostKeyChecking", "no");
-        session.setConfig("PreferredAuthentications",
+        config.put("PreferredAuthentications",
                 "publickey,keyboard-interactive,password");
         session.setConfig(config);
         session.connect();

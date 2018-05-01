@@ -14,13 +14,22 @@ public class PluginSettingsCallback {
         this.pluginSettings = pluginSettings;
     }
 
-    public PluginSettings getPluginSettings(boolean alwaysAskPassphrase) {
+    public void clearPassphrase() {
+        pluginSettings.passphrase = null;
+    }
+
+    public PluginSettings getPluginSettings(boolean mayAskPassphrase) {
         if (pluginSettings.privateKeyFile == null) {
             throw new RuntimeException("Private key file path is not set up");
         }
         // when no connection yet or invalid connection
-        if (alwaysAskPassphrase || pluginSettings.passphrase == null || pluginSettings.passphrase.isEmpty()) {
-            pluginSettings.passphrase = Messages.showPasswordDialog("Enter passphrase for the private key", shortName);
+        if (pluginSettings.passphrase == null) {
+            if (mayAskPassphrase) {
+                pluginSettings.passphrase = Messages.showPasswordDialog(
+                    "Enter passphrase for the private key" + "\n" + "(leave empty if no passphrase)", shortName);
+            } else {
+                throw new RuntimeException("Passphrase was not set up");
+            }
         }
 
         return pluginSettings;

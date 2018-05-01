@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>org.sanchouss.idea.plugins.instantpatch</id>
   <name>Instant Patch Remote Java Process</name>
-  <version>0.0.3</version>
+  <version>0.0.4</version>
   <vendor email="sanchouss@github.com" url="http://github.com/sanchouss">Alexander Perepelkin</vendor>
 
   <description><![CDATA[

@@ -30,6 +30,7 @@ class ReconnectToHostAction extends AnAction {
 
         try {
             System.out.println("Reconnecting to host " + remoteClientProxy.getHost());
+            pluginSettingsCallback.clearPassphrase();
             final PluginSettings pluginSettings = pluginSettingsCallback.getPluginSettings(true);
             remoteClientProxy.reconnect(new RemoteAuth(pluginSettings.privateKeyFile, pluginSettings.passphrase));
         } catch (Exception e1) {

@@ -114,10 +114,12 @@ public class RemoteClientProxy implements RemoteClient {
         }
     }
 
+    /**
+     * Should only be run from event dispatch thread!
+     */
     @Override
     public void enqueue(Runnable command) {
-
-        pluginSettingsCallback.getPluginSettings(false);
+        pluginSettingsCallback.getPluginSettings(true);
         executorService.submit(command);
     }
 

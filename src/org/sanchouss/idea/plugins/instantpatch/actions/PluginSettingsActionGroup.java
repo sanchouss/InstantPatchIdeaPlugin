@@ -1,10 +1,15 @@
 package org.sanchouss.idea.plugins.instantpatch.actions;
 
-import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettings;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
+import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettings;
+
+import java.io.File;
 
 /**
  * Created by Alexander Perepelkin
@@ -46,7 +51,9 @@ public class PluginSettingsActionGroup extends com.intellij.openapi.actionSystem
 
         @Override
         public void actionPerformed(AnActionEvent anActionEvent) {
-            FileChooser.chooseFile(descriptor, null, null, virtualFile -> {
+            final VirtualFile toSelect = StringUtil.isEmpty(pluginSettings.configFile) ? null :
+                LocalFileSystem.getInstance().findFileByIoFile(new File(pluginSettings.configFile));
+            FileChooser.chooseFile(descriptor, null, toSelect, virtualFile -> {
                 pluginSettings.configFile = virtualFile.getCanonicalPath();
                 reload();
             });
@@ -71,7 +78,9 @@ public class PluginSettingsActionGroup extends com.intellij.openapi.actionSystem
 
         @Override
         public void actionPerformed(AnActionEvent anActionEvent) {
-            FileChooser.chooseFile(descriptor, null, null, virtualFile -> {
+            final VirtualFile toSelect = StringUtil.isEmpty(pluginSettings.privateKeyFile) ? null :
+                LocalFileSystem.getInstance().findFileByIoFile(new File(pluginSettings.privateKeyFile));
+            FileChooser.chooseFile(descriptor, null, toSelect, virtualFile -> {
                 pluginSettings.privateKeyFile = virtualFile.getCanonicalPath();
                 reload();
             });
