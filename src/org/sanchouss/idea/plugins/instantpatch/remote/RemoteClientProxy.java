@@ -63,22 +63,22 @@ public class RemoteClientProxy implements RemoteClient {
     private void connect(RemoteAuth remoteAuth) {
         try {
             Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Connecting",
-                "Connecting to host " + getHost() + " started", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
+                "Connecting to host " + getHost() + " ...", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
             actual.set(new RemoteClientImpl(host, user, port, remoteAuth));
             Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Connecting",
                 "Connected to host " + getHost() + " ok", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
         } catch (Exception e) {
             exception.set(e);
             e.printStackTrace();
-            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName,
-                host + ": Exception while connecting to host:" + e.toString() + Arrays.toString(e.getStackTrace()),
+            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Connecting",
+                "Connecting to host " + getHost() + " failed: " + e.toString() + Arrays.toString(e.getStackTrace()),
                 NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
         }
     }
 
     private RuntimeException getRuntimeException() {
-        throw (exception.get() == null) ? new RuntimeException("Connection is not established yet")
-            : new RuntimeException("Error while establishing the connection: ", exception.get());
+        throw (exception.get() == null) ? new RuntimeException("Connection to host " + host + " is not established yet")
+            : new RuntimeException("Error while establishing the connection: " + exception.get().getMessage(), exception.get());
     }
 
     public ChannelSftp getChannelSftp() {

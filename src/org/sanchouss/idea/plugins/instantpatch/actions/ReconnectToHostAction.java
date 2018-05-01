@@ -26,14 +26,12 @@ class ReconnectToHostAction extends AnAction {
         this.remoteClientProxy = remoteClientProxy;
     }
 
-    void connect() {
+    void reconnect() {
 
         try {
-            System.out.println("Connecting to host " + remoteClientProxy.getHost());
+            System.out.println("Reconnecting to host " + remoteClientProxy.getHost());
             final PluginSettings pluginSettings = pluginSettingsCallback.getPluginSettings(true);
             remoteClientProxy.reconnect(new RemoteAuth(pluginSettings.privateKeyFile, pluginSettings.passphrase));
-            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
-                    "Connecting to host " + remoteClientProxy.getHost() + " started", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
         } catch (Exception e1) {
             e1.printStackTrace();
             Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
@@ -43,6 +41,6 @@ class ReconnectToHostAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
-        connect();
+        reconnect();
     }
 }
