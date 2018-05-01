@@ -11,6 +11,7 @@ import org.sanchouss.idea.plugins.instantpatch.remote.RemoteAuth;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClientProxy;
 import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettings;
 import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettingsCallback;
+import org.sanchouss.idea.plugins.instantpatch.util.ExceptionUtils;
 
 /**
  * Created by Alexander Perepelkin
@@ -36,7 +37,7 @@ class ReconnectToHostAction extends AnAction {
         } catch (Exception e1) {
             e1.printStackTrace();
             Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
-                    e1.toString(), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
+                    ExceptionUtils.getStructuredErrorString(e1), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
         }
     }
 

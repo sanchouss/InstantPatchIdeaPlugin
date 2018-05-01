@@ -1,9 +1,5 @@
 package org.sanchouss.idea.plugins.instantpatch.actions;
 
-import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginRegistration;
-import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClient;
-import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessSftpPatcher;
-import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessRunnerShell;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
@@ -12,6 +8,11 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginRegistration;
+import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClient;
+import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessRunnerShell;
+import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessSftpPatcher;
+import org.sanchouss.idea.plugins.instantpatch.util.ExceptionUtils;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -57,7 +58,7 @@ class CopyFilesToRemotePathAction extends AnAction {
         } catch (Exception e1) {
             e1.printStackTrace();
             Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
-                e1.toString(), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
+                ExceptionUtils.getStructuredErrorString(e1), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
         }
     }
 
@@ -111,7 +112,7 @@ class CopyFilesToRemotePathAction extends AnAction {
             } catch (Exception e1) {
                 e1.printStackTrace();
                 Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
-                    e1.toString(), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
+                    ExceptionUtils.getStructuredErrorString(e1), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
             }
 
         }

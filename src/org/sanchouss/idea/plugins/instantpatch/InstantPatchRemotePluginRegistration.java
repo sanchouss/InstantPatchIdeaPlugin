@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.sanchouss.idea.plugins.instantpatch.actions.RemoteOperationRootGroup;
 import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettings;
+import org.sanchouss.idea.plugins.instantpatch.util.ExceptionUtils;
 
 import java.io.File;
 
@@ -73,7 +74,7 @@ public class InstantPatchRemotePluginRegistration implements ApplicationComponen
         } catch (Exception e) {
             System.err.println("Exception happened while registering root action group: " + e);
             Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName,
-                    "Loading error: " + e.toString(), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
+                    "Loading error: " + ExceptionUtils.getStructuredErrorString(e), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
         }
     }
 

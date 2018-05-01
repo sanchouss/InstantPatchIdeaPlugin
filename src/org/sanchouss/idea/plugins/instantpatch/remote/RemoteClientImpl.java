@@ -39,7 +39,7 @@ public class RemoteClientImpl implements RemoteClient {
         }
     }
 
-    public RemoteClientImpl(String host, String user, int port, RemoteAuth remoteAuth) throws IOException, JSchException, SftpException, InterruptedException {
+    public RemoteClientImpl(String host, String user, int port, RemoteAuth remoteAuth) throws JSchException, IOException {
         this.host = host;
         this.user = user;
         this.port = port;
@@ -56,16 +56,24 @@ public class RemoteClientImpl implements RemoteClient {
         config.put("PreferredAuthentications",
                 "publickey,keyboard-interactive,password");
         session.setConfig(config);
-        session.connect();
+        try {
+            session.connect();
+        } catch (JSchException e) {
+            // new JSchException("Can not connect Jsch session: ", e); seems to be outdated api
+            throw new RuntimeException("Can not connect Jsch session: ", e);
+        }
         System.out.println("session connected.....");
 
-        {
+        try {
             Channel channel = session.openChannel("sftp");
 //            channel.setInputStream(System.in);
 //            channel.setOutputStream(System.out);
             channel.connect();
             channelSftp = (ChannelSftp) channel;
-            System.out.println("ftp channel connected....");
+            System.out.println("sftp channel connected....");
+        } catch (JSchException e) {
+//            throw new JSchException("Can not connect sftp channel: ", e); seems to be outdated api
+            throw new RuntimeException("Can not connect sftp channel: ", e);
         }
 
         /*
@@ -81,7 +89,7 @@ public class RemoteClientImpl implements RemoteClient {
 //            channelSftp.put(fileName, "./in/");
         System.out.println("ftp connected");
 
-        {
+        try {
             Channel channel = session.openChannel("shell");
             // Enable agent-forwarding.
 
@@ -142,6 +150,9 @@ public class RemoteClientImpl implements RemoteClient {
 
             channelShell.connect(1000);
             System.out.println("shell connected");
+        } catch (JSchException e) {
+//            throw new JSchException("Can not connect sftp channel: ", e); seems to be outdated api
+            throw new RuntimeException("Can not connect Jsch shell channel: ", e);
         }
     }
 

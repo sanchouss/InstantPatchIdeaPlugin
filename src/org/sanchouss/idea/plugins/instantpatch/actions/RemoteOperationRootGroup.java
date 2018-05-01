@@ -13,6 +13,7 @@ import org.sanchouss.idea.plugins.instantpatch.settings.Configuration;
 import org.sanchouss.idea.plugins.instantpatch.settings.Host;
 import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettings;
 import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettingsCallback;
+import org.sanchouss.idea.plugins.instantpatch.util.ExceptionUtils;
 
 import javax.xml.bind.JAXBException;
 
@@ -80,7 +81,7 @@ public class RemoteOperationRootGroup extends com.intellij.openapi.actionSystem.
             } catch (JAXBException e) {
                 e.printStackTrace();
                 Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName,
-                        "Error reading config " + configPath + ":" + e.toString(), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
+                        "Error reading config " + configPath + ": " + ExceptionUtils.getStructuredErrorString(e), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
                 throw new RuntimeException(e);
             }
     }
