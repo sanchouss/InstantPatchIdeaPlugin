@@ -1,6 +1,6 @@
 package org.sanchouss.idea.plugins.instantpatch.actions;
 
-import org.sanchouss.idea.plugins.instantpatch.RemoteClient;
+import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClient;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 

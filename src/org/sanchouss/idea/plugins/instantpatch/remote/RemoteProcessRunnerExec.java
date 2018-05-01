@@ -1,7 +1,8 @@
-package org.sanchouss.idea.plugins.instantpatch;
+package org.sanchouss.idea.plugins.instantpatch.remote;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
+import org.sanchouss.idea.plugins.instantpatch.Checks;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,7 +10,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
- * Establishes SSH connection for every command
+ * Establishes new 'exec' channel for every command.
+ *
  * Created by Alexander Perepelkin
  */
 public class RemoteProcessRunnerExec {

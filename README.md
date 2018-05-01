@@ -29,7 +29,7 @@ After plugin is installed, open Project View:
 
       View → Tool Windows → Project
 
-Then right click on any file in Projct view and choose
+Then right click on any file in Project view and choose
 
       Copy/Restart Remote... → Settings → Config file
       Copy/Restart Remote... → Settings → Private key file

@@ -1,4 +1,4 @@
-package org.sanchouss.idea.plugins.instantpatch;
+package org.sanchouss.idea.plugins.instantpatch.remote;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelShell;
@@ -8,23 +8,25 @@ import java.io.PipedOutputStream;
 import java.io.PrintStream;
 
 /**
+ * Establishes session to remote host and create sftp/shell channels.
+ *
  * Created by Alexander Perepelkin
  */
 public interface RemoteClient {
-    ChannelSftp getCsftp();
+    Session getSession();
 
-    ChannelShell getChannelShell();
+    void arrangeSftpCommand(SftpCommand<ChannelSftp> sftpCommand);
+
+    void arrangeShellCommand(ShellCommand<ChannelShell> shellCommand);
 
     PipedOutputStream getPipedOutputStreamCommandsToRemote();
 
     PrintStream getPipedOutputStreamCommandsToRemotePrinter();
 
-    Session getSession();
-
     void disconnect();
 
-    default RemoteProcessPatcher createPatcher(String processDir) {
-        RemoteProcessPatcher rpp = new RemoteProcessPatcher(this, processDir);
+    default RemoteProcessSftpPatcher createPatcher(String processDir) {
+        RemoteProcessSftpPatcher rpp = new RemoteProcessSftpPatcher(this, processDir);
         return rpp;
     }
 
@@ -39,4 +41,6 @@ public interface RemoteClient {
     }
 
     PrintStream getChannelShellToRemotePrinter();
+
+    void enqueue(Runnable command);
 }

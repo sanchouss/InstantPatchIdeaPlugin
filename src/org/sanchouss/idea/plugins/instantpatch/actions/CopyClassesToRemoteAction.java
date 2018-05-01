@@ -17,31 +17,40 @@ import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.jcraft.jsch.SftpException;
 import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginRegistration;
-import org.sanchouss.idea.plugins.instantpatch.RemoteClient;
-import org.sanchouss.idea.plugins.instantpatch.RemoteProcessPatcher;
-import org.sanchouss.idea.plugins.instantpatch.RemoteProcessRunnerShell;
+import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClient;
+import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessRunnerShell;
+import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessSftpPatcher;
 import org.sanchouss.idea.plugins.instantpatch.settings.Process;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 
 /**
  * Created by Alexander Perepelkin
+ *
+ * //todo: work on notifications: connections start/finish/fail, other actions - finish/fail
  */
 class CopyClassesToRemoteAction extends AnAction {
-    private final RemoteProcessPatcher patcher;
+    private final RemoteProcessSftpPatcher patcher;
 
     private final RemoteProcessRunnerShell runnerShell;
     private final HashSet<String> allowedResources = Sets.newHashSet(Arrays.asList(".xml", ".json", ".properties",".csv", ".sh"));
     private final String actionTitle = "Copying classes to remote";
+    private final RemoteClient remoteClient;
 
     public CopyClassesToRemoteAction(RemoteClient remoteClient, Process process) {
         super("Copy Selected Classes to Remote Directory");
+        this.remoteClient = remoteClient;
         this.patcher = remoteClient.createPatcher(process.getClassFilesDirectory());
         this.runnerShell = remoteClient.createRunnerShell(process.getClassFilesDirectory(), process.getProcessName());
     }
@@ -52,7 +61,7 @@ class CopyClassesToRemoteAction extends AnAction {
         try {
             Project project = e.getData(PlatformDataKeys.PROJECT);
 
-            final RemoteJobCopy jobs = new RemoteJobCopy(patcher, runnerShell);
+            final RemoteJobCopy jobs = new RemoteJobCopy();
             final VirtualFile[] files = e.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY);
 
             final LinkedList<VirtualFile> filesToCopy = Lists.newLinkedList(Arrays.asList(files));
@@ -118,19 +127,7 @@ class CopyClassesToRemoteAction extends AnAction {
                 }
             }
 
-            int copiedFiles = 0;
-            TreeMap<String, RemoteJobCopy.FileSet> jobsOrdered = jobs.getJobsOrderedByPath();
-            for (Map.Entry<String, RemoteJobCopy.FileSet> jobEntry: jobsOrdered.entrySet()) {
-                RemoteJobCopy.FileSet remoteJob = jobEntry.getValue();
-                remoteJob.copySet();
-                copiedFiles += remoteJob.files.size();
-            }
-
-            String msg = "Uploaded " + copiedFiles + " files to " + jobsOrdered.size() + " remote dirs";
-            System.out.println(msg);
-
-            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
-                    msg, NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
+            remoteClient.enqueue(new CopyClassesToRemoteCommand(jobs));
 
         } catch (Exception e1) {
             e1.printStackTrace();
@@ -149,15 +146,8 @@ class CopyClassesToRemoteAction extends AnAction {
     }
 
     private static class RemoteJobCopy {
-        private final RemoteProcessPatcher patcher;
-        private final RemoteProcessRunnerShell runnerShell;
         private final HashMap<String, FileSet> jobs = Maps.newHashMap();
         private final HashSet<String> existAlreadyDirs = Sets.newHashSet();
-
-        public RemoteJobCopy(RemoteProcessPatcher patcher, RemoteProcessRunnerShell runnerShell) {
-            this.patcher = patcher;
-            this.runnerShell = runnerShell;
-        }
 
         FileSet submit(String outputClassesLocalDir, String toRemoteRelativeDir) {
             FileSet copyFilesJob = jobs.get(outputClassesLocalDir);
@@ -182,15 +172,6 @@ class CopyClassesToRemoteAction extends AnAction {
             FileSet(String fromLocalDir, String toRemoteRelativeDir) {
                 this.fromLocalDir = fromLocalDir;
                 this.toRemoteRelativeDir = toRemoteRelativeDir;
-            }
-
-            public void copySet() throws SftpException, IOException {
-                // one - by - one creation:
-//            patcher.cd();
-//            patcher.mkdir(toRemoteRelativeDir, existAlreadyDirs);
-                // create with parents
-                runnerShell.mkdir(toRemoteRelativeDir, existAlreadyDirs);
-                patcher.uploadFiles(fromLocalDir, toRemoteRelativeDir, files);
             }
         }
     }
@@ -262,19 +243,39 @@ class CopyClassesToRemoteAction extends AnAction {
         return res;
     }
 
-    private List<String> getPackageDirectory(String subdir) {
-/*
-        int firstComPackage = subdir.indexOf("/com/");
-        if (firstComPackage == -1) {
-            throw new NotJavaResourceException("Can not find /com/ part of the package in the " + subdir);
+    private class CopyClassesToRemoteCommand implements Runnable {
+        private final RemoteJobCopy jobs;
+
+        public CopyClassesToRemoteCommand(RemoteJobCopy jobs) {
+            this.jobs = jobs;
         }
 
-        String packagePath =  subdir.substring(firstComPackage+1);
-*/
+        @Override
+        public void run() {
+            try {
 
-        String[] pkg = subdir.split("/");
+                int copiedFiles = 0;
+                TreeMap<String, RemoteJobCopy.FileSet> jobsOrdered = jobs.getJobsOrderedByPath();
+                for (Map.Entry<String, RemoteJobCopy.FileSet> jobEntry: jobsOrdered.entrySet()) {
+                    RemoteJobCopy.FileSet fileSet = jobEntry.getValue();
 
-        return Lists.newArrayList(pkg);
+                    runnerShell.mkdir(fileSet.toRemoteRelativeDir, jobs.existAlreadyDirs);
+                    patcher.uploadFiles(fileSet.fromLocalDir, fileSet.toRemoteRelativeDir, fileSet.files);
+
+                    copiedFiles += fileSet.files.size();
+                }
+
+                String msg = "Uploaded " + copiedFiles + " files to " + jobsOrdered.size() + " remote dirs";
+                System.out.println(msg);
+
+                Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
+                    msg, NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
+
+            } catch (Exception e1) {
+                e1.printStackTrace();
+                Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
+                    e1.toString(), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
+            }
+        }
     }
-
 }

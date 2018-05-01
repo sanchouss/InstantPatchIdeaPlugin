@@ -1,13 +1,14 @@
-package org.sanchouss.idea.plugins.instantpatch;
+package org.sanchouss.idea.plugins.instantpatch.remote;
 
 import com.jcraft.jsch.JSchException;
+import org.sanchouss.idea.plugins.instantpatch.Checks;
 
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashSet;
 
 /**
- * Establishes SSH connection once, then issues commands
+ * Uses same 'shell' channel for all commands.
  *
  * Created by Alexander Perepelkin
  */
@@ -23,49 +24,16 @@ public class RemoteProcessRunnerShell {
         this.remoteClient = remoteClient;
     }
 
-    public void restart() throws IOException, JSchException, InterruptedException {
-        String cmdToRun = processDirectory + "reset.sh";
-        exec(cmdToRun);
-    }
-
-    public void mkdir(String directory) throws IOException, JSchException, InterruptedException {
-        Checks.checkEndsWithSlash(directory);
-        String fullpath = processDirectory + directory;
-        System.out.println("Making directory " + fullpath);
-        String cmdToRun = "mkdir -p " + fullpath;
-        exec(cmdToRun);
-    }
-
-    public void mkdir(String directory, HashSet<String> existAlreadyDirs) throws IOException {
-        String fullpath = processDirectory + directory;
-        System.out.println("Making directory " + fullpath);
-        String cmdToRun = "mkdir -p " + fullpath;
-        exec(cmdToRun);
-    }
-
-    public void rmdir() throws IOException, JSchException, InterruptedException {
-        String fullpath = processDirectory + "*";
-        System.out.println("Removing directory " + fullpath);
-        String cmdToRun = "rm -rf " + fullpath;
-        exec(cmdToRun);
-    }
-
-    public void echo(String line) throws IOException, JSchException, InterruptedException {
-        String cmdToRun = "echo " + line;
-        exec(cmdToRun);
-    }
-
     public void exec(String cmdToRun) throws IOException {
-        if (!remoteClient.getChannelShell().isConnected())
-            throw new IOException("shell is not connected!");
 
-        System.out.println("EXEC: " + "Executing command: " + cmdToRun);
+        remoteClient.arrangeShellCommand(sh -> {
+            System.out.println("EXEC: " + "Executing command: " + cmdToRun);
+            // send the cmd to channel, do not wait for the response here
+            PrintStream printer = remoteClient.getChannelShellToRemotePrinter();
 
-        // send the cmd to channel, do not wait for the response here
-        PrintStream printer = remoteClient.getChannelShellToRemotePrinter();
-
-        printer.println(cmdToRun);
-        printer.flush();
+            printer.println(cmdToRun);
+            printer.flush();
+        });
 /*
         remoteClient.channelShellInputs = new InputStream[] {channelShell.getInputStream(), channelShell.getExtInputStream()};
 
@@ -99,6 +67,34 @@ public class RemoteProcessRunnerShell {
         }
         System.out.println("HOST: " + "reply took " + (System.currentTimeMillis()-now) + "ms");
 */
+    }
+
+
+    public void mkdir(String directory) throws IOException, JSchException, InterruptedException {
+        Checks.checkEndsWithSlash(directory);
+        String fullpath = processDirectory + directory;
+        System.out.println("Making directory " + fullpath);
+        String cmdToRun = "mkdir -p " + fullpath;
+        exec(cmdToRun);
+    }
+
+    public void mkdir(String directory, HashSet<String> existAlreadyDirs) throws IOException {
+        String fullpath = processDirectory + directory;
+        System.out.println("Making directory " + fullpath);
+        String cmdToRun = "mkdir -p " + fullpath;
+        exec(cmdToRun);
+    }
+
+    public void rmdir() throws IOException, JSchException, InterruptedException {
+        String fullpath = processDirectory + "*";
+        System.out.println("Removing directory " + fullpath);
+        String cmdToRun = "rm -rf " + fullpath;
+        exec(cmdToRun);
+    }
+
+    public void echo(String line) throws IOException, JSchException, InterruptedException {
+        String cmdToRun = "echo " + line;
+        exec(cmdToRun);
     }
 
 }

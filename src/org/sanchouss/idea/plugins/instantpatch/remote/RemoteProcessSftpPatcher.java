@@ -1,7 +1,8 @@
-package org.sanchouss.idea.plugins.instantpatch;
+package org.sanchouss.idea.plugins.instantpatch.remote;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpException;
+import org.sanchouss.idea.plugins.instantpatch.Checks;
 
 import java.util.HashSet;
 import java.util.List;
@@ -12,22 +13,22 @@ import java.util.List;
  *
  * SFTP can not work with aliases like '~'. Need to provide full path
  */
-public class RemoteProcessPatcher {
+public class RemoteProcessSftpPatcher {
     final String processDirectory;
     final RemoteClient remoteClient;
 
-    public RemoteProcessPatcher(RemoteClient remoteClient, String processDir) {
+    public RemoteProcessSftpPatcher(RemoteClient remoteClient, String processDir) {
         Checks.checkEndsWithSlash(processDir);
         this.processDirectory = processDir;
         this.remoteClient = remoteClient;
     }
 
-    public void cd(String processDir) throws SftpException {
-        remoteClient.getCsftp().cd(processDir);
+    public void cd(String dir) throws SftpException {
+        remoteClient.arrangeSftpCommand(sftp -> sftp.cd(dir));
     }
 
     public void cd() throws SftpException {
-        remoteClient.getCsftp().cd(processDirectory);
+        remoteClient.arrangeSftpCommand(sftp -> sftp.cd(processDirectory));
     }
 
     public void mkdir() throws SftpException {
@@ -38,24 +39,25 @@ public class RemoteProcessPatcher {
         Checks.checkEndsWithSlash(directory);
         String subs[] = directory.split("/");
 
-        makeSubDir(directory, 0, null);
+        remoteClient.arrangeSftpCommand(sftp -> makeSubDir(sftp, directory, 0, null));
     }
 
     public void mkdir(String directory, HashSet<String> existAlready) throws SftpException {
-        String subs[] = directory.split("/");
-        String pwd = remoteClient.getCsftp().pwd();
-        System.out.println("Making directory " + directory + " at path " + processDirectory + " (pwd=" + pwd + ")");
-        makeSubDir(directory, 0, existAlready);
+        remoteClient.arrangeSftpCommand(sftp -> {
+            String pwd = sftp.pwd();
+            System.out.println("Making directory " + directory + " at path " + processDirectory + " (pwd=" + pwd + ")");
+            makeSubDir(sftp, directory, 0, existAlready);
+        });
     }
 
-    private void makeSubDir(String directory, int index, HashSet<String> existAlready) throws SftpException {
+    private void makeSubDir(ChannelSftp sftp, String directory, int index, HashSet<String> existAlready) throws SftpException {
         int delim = directory.indexOf('/', index);
 
         final String sub = (delim == -1) ? directory : directory.substring(0, delim);
         if (existAlready == null || !existAlready.contains(sub)) {
             System.out.println("Making directory " + sub);
             try {
-                remoteClient.getCsftp().mkdir(sub);
+                sftp.mkdir(sub);
                 if (existAlready != null)
                     existAlready.add(sub);
             } catch (SftpException e) {
@@ -70,13 +72,13 @@ public class RemoteProcessPatcher {
         }
 
         if (delim != -1 && delim != directory.length()-1) {
-            makeSubDir(directory, delim + 1, existAlready);
+            makeSubDir(sftp, directory, delim + 1, existAlready);
         }
     }
 
     public void chmod(int perm, String file) throws SftpException {
         System.out.println("Chmod " + perm + " on " + file);
-        remoteClient.getCsftp().chmod(perm, file);
+        remoteClient.arrangeSftpCommand(sftp -> sftp.chmod(perm, file));
     }
 
     public void uploadFiles(String fromLocalDirectory, String toRemoteDirectory, List<String> files) throws SftpException {
@@ -94,7 +96,7 @@ public class RemoteProcessPatcher {
 
             String src = fromLocalDirectory + file, dst = processDirectory + toRemoteDirectory + file;
             System.out.println("Copying " + src + " -> " + dst);
-            remoteClient.getCsftp().put(src, dst, ChannelSftp.OVERWRITE);
+            remoteClient.arrangeSftpCommand(sftp -> sftp.put(src, dst, ChannelSftp.OVERWRITE));
         }
     }
 }

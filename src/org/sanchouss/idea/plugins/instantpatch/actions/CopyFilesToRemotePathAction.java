@@ -1,9 +1,9 @@
 package org.sanchouss.idea.plugins.instantpatch.actions;
 
 import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginRegistration;
-import org.sanchouss.idea.plugins.instantpatch.RemoteClient;
-import org.sanchouss.idea.plugins.instantpatch.RemoteProcessPatcher;
-import org.sanchouss.idea.plugins.instantpatch.RemoteProcessRunnerShell;
+import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClient;
+import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessSftpPatcher;
+import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessRunnerShell;
 import com.google.common.collect.Lists;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationListener;
@@ -28,13 +28,15 @@ import java.util.LinkedList;
  */
 class CopyFilesToRemotePathAction extends AnAction {
     public static final String actionTitle = "Copying specific files to fixed remote";
-    private final RemoteProcessPatcher patcher;
+    private final RemoteProcessSftpPatcher patcher;
+    private final RemoteClient remoteClient;
     private final String remoteDirectory;
     private final RemoteProcessRunnerShell runner;
     private final String tmpDir;
 
     public CopyFilesToRemotePathAction(RemoteClient remoteClient, String remoteDirectory, String tempDirectory) {
         super(remoteDirectory);
+        this.remoteClient = remoteClient;
         this.remoteDirectory = remoteDirectory;
         this.tmpDir = tempDirectory;
         this.patcher = remoteClient.createPatcher(tmpDir);
@@ -47,43 +49,63 @@ class CopyFilesToRemotePathAction extends AnAction {
         try {
             final VirtualFile[] files = e.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY);
             final LinkedList<VirtualFile> filesToCopy = Lists.newLinkedList(Arrays.asList(files));
-            System.out.println("Got " + filesToCopy.size() + " items to copy chosen initially");
-            int copied = 0, failed = 0;
-            while (!filesToCopy.isEmpty()) {
-                final VirtualFile file = filesToCopy.removeFirst();
 
-                if (!file.isDirectory()) {
-                    // upload to user's tmp dir, can not upload to root's dir via sftp
-                    final String fileDir = file.getParent().getPath();
-                    patcher.uploadFiles(fileDir, "./", Lists.newArrayList(file.getName()));
-                    try {
-                        final String tmpFile = tmpDir + file.getName(),
-                            tmpFileLF = tmpDir + file.getName() + ".lf";
-                        // truncate crlf to lf in uploaded file
-                        runner.exec("tr -d '\\r' < " + tmpFile + " > " + tmpFileLF);
-                        // todo: make backup of original once only - check for existing backup
-                        final String targetFile = remoteDirectory + file.getName();
-                        runner.exec("sudo cp " + targetFile + " " + targetFile + ".bak");
-                        runner.exec("sudo cp -f " + tmpFileLF + " " + targetFile);
-                        ++copied;
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                        ++failed;
-                    }
-                } else {
-                    System.err.println("File is directory: " + file.getPath());
-                }
-            }
-
-            String msg = "Finished copying specific files to " + remoteDirectory + " \n" + copied + " copied, " + failed + " failed";
-            System.out.println(msg);
-            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
-                    msg, NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
-
+            remoteClient.enqueue(new CopyFilesToRemotePathCommand(filesToCopy));
         } catch (Exception e1) {
             e1.printStackTrace();
             Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
                 e1.toString(), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
+        }
+    }
+
+    private class CopyFilesToRemotePathCommand implements Runnable {
+        private final LinkedList<VirtualFile> filesToCopy;
+
+        public CopyFilesToRemotePathCommand(LinkedList<VirtualFile> filesToCopy) {
+
+            this.filesToCopy = filesToCopy;
+        }
+
+        public void run() {
+            try {
+                System.out.println("Got " + filesToCopy.size() + " items to copy chosen initially");
+                int copied = 0, failed = 0;
+                while (!filesToCopy.isEmpty()) {
+                    final VirtualFile file = filesToCopy.removeFirst();
+
+                    if (!file.isDirectory()) {
+                        // upload to user's tmp dir, can not upload to root's dir via sftp
+                        final String fileDir = file.getParent().getPath();
+                        patcher.uploadFiles(fileDir, "./", Lists.newArrayList(file.getName()));
+                        try {
+                            final String tmpFile = tmpDir + file.getName(),
+                                tmpFileLF = tmpDir + file.getName() + ".lf";
+                            // truncate crlf to lf in uploaded file
+                            runner.exec("tr -d '\\r' < " + tmpFile + " > " + tmpFileLF);
+                            // todo: make backup of original once only - check for existing backup
+                            final String targetFile = remoteDirectory + file.getName();
+                            runner.exec("sudo cp " + targetFile + " " + targetFile + ".bak");
+                            runner.exec("sudo cp -f " + tmpFileLF + " " + targetFile);
+                            ++copied;
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                            ++failed;
+                        }
+                    } else {
+                        System.err.println("File is directory: " + file.getPath());
+                    }
+                }
+
+                String msg = "Finished copying specific files to " + remoteDirectory + " \n" + copied + " copied, " + failed + " failed";
+                System.out.println(msg);
+                Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
+                    msg, NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
+            } catch (Exception e1) {
+                e1.printStackTrace();
+                Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
+                    e1.toString(), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
+            }
+
         }
     }
 }

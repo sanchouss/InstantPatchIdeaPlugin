@@ -1,10 +1,12 @@
-package org.sanchouss.idea.plugins.instantpatch;
+package org.sanchouss.idea.plugins.instantpatch.remote;
 
 import com.jcraft.jsch.*;
 
 import java.io.*;
 
 /**
+ * Establishes session to remote host and opens sftp and shell channels.
+ *
  * Created by Alexander Perepelkin
  */
 public class RemoteClientImpl implements RemoteClient {
@@ -13,7 +15,7 @@ public class RemoteClientImpl implements RemoteClient {
     private final JSch jsch;
 
     private final Session session;
-    private final ChannelSftp csftp;
+    private final ChannelSftp channelSftp;
     private final ChannelShell channelShell;
 
     private final PipedOutputStream pipedOutputStreamCommandsToRemote;
@@ -42,21 +44,21 @@ public class RemoteClientImpl implements RemoteClient {
 //            channel.setInputStream(System.in);
 //            channel.setOutputStream(System.out);
             channel.connect();
-            csftp = (ChannelSftp) channel;
+            channelSftp = (ChannelSftp) channel;
             System.out.println("ftp channel connected....");
         }
 
         /*
             few tests
 
-        String pwd = csftp.pwd();
-        Vector<ChannelSftp.LsEntry> ls = csftp.ls(".");
+        String pwd = channelSftp.pwd();
+        Vector<ChannelSftp.LsEntry> ls = channelSftp.ls(".");
         System.out.println(pwd);
         System.out.println(ls);
 
         */
 //            String fileName = "test.txt";
-//            csftp.put(fileName, "./in/");
+//            channelSftp.put(fileName, "./in/");
         System.out.println("ftp connected");
 
         {
@@ -116,16 +118,15 @@ public class RemoteClientImpl implements RemoteClient {
             new ThreadInputStreamReader("Thread getInputStream Reader", "INPT", channelShellInputs[0]).start();
             new ThreadInputStreamReader("Thread getExtInputStream Reader", "INPE", channelShellInputs[1]).start();
 
-            channelShellConnect();
+            channelShell.connect(1000);
+            System.out.println("shell connected");
         }
     }
 
-    @Override
-    public ChannelSftp getCsftp() {
-        return csftp;
+    public ChannelSftp getChannelSftp() {
+        return channelSftp;
     }
 
-    @Override
     public ChannelShell getChannelShell() {
         return channelShell;
     }
@@ -176,14 +177,9 @@ public class RemoteClientImpl implements RemoteClient {
         }
     }
 
-    private void channelShellConnect() throws JSchException {
-        channelShell.connect(1000);
-        System.out.println("shell connected");
-    }
-
     @Override
     public void disconnect() {
-        csftp.disconnect();
+        channelSftp.disconnect();
         channelShell.disconnect();
         session.disconnect();
         System.out.println("disconnected");
@@ -193,5 +189,28 @@ public class RemoteClientImpl implements RemoteClient {
     @Override
     public PrintStream getChannelShellToRemotePrinter() {
         return pipedOutputStreamCommandsToRemotePrinter;
+    }
+
+    @Override
+    public void enqueue(Runnable command) {
+        command.run();
+    }
+
+    @Override
+    public void arrangeSftpCommand(SftpCommand<ChannelSftp> sftpCommand) {
+        try {
+            sftpCommand.accept(channelSftp);
+        } catch (SftpException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void arrangeShellCommand(ShellCommand<ChannelShell> shellCommand) {
+        try {
+            shellCommand.accept(channelShell);
+        } catch (SftpException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

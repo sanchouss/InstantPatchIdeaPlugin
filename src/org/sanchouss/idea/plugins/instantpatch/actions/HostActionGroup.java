@@ -3,14 +3,13 @@ package org.sanchouss.idea.plugins.instantpatch.actions;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
-import org.sanchouss.idea.plugins.instantpatch.RemoteClientProxy;
 import org.sanchouss.idea.plugins.instantpatch.Utils;
+import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClientProxy;
 import org.sanchouss.idea.plugins.instantpatch.settings.Host;
-import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettings;
+import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettingsCallback;
 import org.sanchouss.idea.plugins.instantpatch.settings.Process;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by Alexander Perepelkin
@@ -18,20 +17,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 class HostActionGroup extends com.intellij.openapi.actionSystem.DefaultActionGroup {
     private final Host host;
-    private final PluginSettings pluginSettings;
+    private final PluginSettingsCallback pluginSettingsCallback;
     private final RemoteClientProxy remoteClientProxy;
     private final Optional<ReconnectToHostAction> reconnectAction;
-    private AtomicBoolean wasChosenOnceAlready = new AtomicBoolean(false);
 
-    public HostActionGroup(Host host, PluginSettings pluginSettings) {
+    public HostActionGroup(Host host, PluginSettingsCallback pluginSettingsCallback) {
         super(host.getHostname(), true);
         this.host = host;
-        this.pluginSettings = pluginSettings;
+        this.pluginSettingsCallback = pluginSettingsCallback;
 
         RemoteClientProxy proxy = null;
         ReconnectToHostAction reconnect = null;
         try {
-            proxy = new RemoteClientProxy(host.getHostname(), host.getUsername(), 22,
+            proxy = new RemoteClientProxy(host.getHostname(), host.getUsername(), 22, pluginSettingsCallback,
                     Utils.getExecutorService());
 
             for (final Process process : host.getProcesses()) {
@@ -39,7 +37,7 @@ class HostActionGroup extends com.intellij.openapi.actionSystem.DefaultActionGro
                 add(action);
             }
 
-            reconnect = new ReconnectToHostAction(pluginSettings, proxy);
+            reconnect = new ReconnectToHostAction(pluginSettingsCallback, proxy);
             add(reconnect);
         } catch (Exception e) {
             add(new DumbAction(host.getHostname() + ": Exception while creating host menu group item. See stderr..."));
@@ -59,9 +57,6 @@ class HostActionGroup extends com.intellij.openapi.actionSystem.DefaultActionGro
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
-        // todo: move (re)connection to the endpoint action
-        if (wasChosenOnceAlready.compareAndSet(false, true)) {
-            reconnectAction.ifPresent(r -> r.connect(false));
-        }
+        // Note: does not work for group
     }
 }

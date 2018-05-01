@@ -1,11 +1,5 @@
 package org.sanchouss.idea.plugins.instantpatch.actions;
 
-import org.sanchouss.idea.plugins.instantpatch.ConfigSerializer;
-import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginRegistration;
-import org.sanchouss.idea.plugins.instantpatch.RemoteAuth;
-import org.sanchouss.idea.plugins.instantpatch.settings.Configuration;
-import org.sanchouss.idea.plugins.instantpatch.settings.Host;
-import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettings;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
@@ -13,6 +7,12 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Constraints;
+import org.sanchouss.idea.plugins.instantpatch.ConfigSerializer;
+import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginRegistration;
+import org.sanchouss.idea.plugins.instantpatch.settings.Configuration;
+import org.sanchouss.idea.plugins.instantpatch.settings.Host;
+import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettings;
+import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettingsCallback;
 
 import javax.xml.bind.JAXBException;
 
@@ -61,20 +61,20 @@ public class RemoteOperationRootGroup extends com.intellij.openapi.actionSystem.
             "Config " + configPath + " is read", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
 
         for (final Host host : config.getHosts()) {
-            AnAction action = new HostActionGroup(host, pluginSettings);
+            AnAction action = new HostActionGroup(host, new PluginSettingsCallback(pluginSettings));
             add(action);
-            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName,
-                "Host action " + host.getHostname() + " is created", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
+//            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName,
+//                "Host action " + host.getHostname() + " is created", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
         }
         System.out.println("Action items (" + config.getHosts().size() + ") are created");
-        Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName,
-            "Action items (" + config.getHosts().size() + ") are created", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
+//        Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName,
+//            "Action items (" + config.getHosts().size() + ") are created", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
     }
 
     private Configuration readConfig() {
             System.out.println("Reading config " + configPath + " ...");
-            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName,
-                    "Reading config " + configPath + " ...", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
+//            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName,
+//                    "Reading config " + configPath + " ...", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
             try {
                 return ConfigSerializer.read(configPath);
             } catch (JAXBException e) {

@@ -1,4 +1,4 @@
-package org.sanchouss.idea.plugins.instantpatch;
+package org.sanchouss.idea.plugins.instantpatch.remote;
 
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
