@@ -3,6 +3,9 @@ package org.sanchouss.idea.plugins.instantpatch.remote;
 import com.jcraft.jsch.*;
 
 import java.io.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Establishes session to remote host and opens sftp and shell channels.
@@ -20,6 +23,20 @@ public class RemoteClientImpl implements RemoteClient {
 
     private final PipedOutputStream pipedOutputStreamCommandsToRemote;
     private final PrintStream pipedOutputStreamCommandsToRemotePrinter;
+    private final ThreadInputStreamReader inputShellReader;
+    private final ThreadInputStreamReader errorShellReader;
+
+    private final AtomicReference<WaitForRemoteReply> waitForReply = new AtomicReference<>();
+
+    private static class WaitForRemoteReply {
+        private final CountDownLatch latch;
+        private final int waitForMillis;
+
+        private WaitForRemoteReply(CountDownLatch latch, int waitForMillis) {
+            this.latch = latch;
+            this.waitForMillis = waitForMillis;
+        }
+    }
 
     public RemoteClientImpl(String host, String user, int port, RemoteAuth remoteAuth) throws IOException, JSchException, SftpException, InterruptedException {
         this.host = host;
@@ -115,8 +132,10 @@ public class RemoteClientImpl implements RemoteClient {
             channelShell = (ChannelShell) channel;
             InputStream[] channelShellInputs = new InputStream[]{channelShell.getInputStream(), channelShell.getExtInputStream()};
 
-            new ThreadInputStreamReader("Thread getInputStream Reader", "INPT", channelShellInputs[0]).start();
-            new ThreadInputStreamReader("Thread getExtInputStream Reader", "INPE", channelShellInputs[1]).start();
+            inputShellReader = new ThreadInputStreamReader("Thread getInputStream Reader", "INPT", channelShellInputs[0]);
+            errorShellReader = new ThreadInputStreamReader("Thread getExtInputStream Reader", "INPE", channelShellInputs[1]);
+            inputShellReader.start();
+            errorShellReader.start();
 
             channelShell.connect(1000);
             System.out.println("shell connected");
@@ -129,16 +148,6 @@ public class RemoteClientImpl implements RemoteClient {
 
     public ChannelShell getChannelShell() {
         return channelShell;
-    }
-
-    @Override
-    public PipedOutputStream getPipedOutputStreamCommandsToRemote() {
-        return pipedOutputStreamCommandsToRemote;
-    }
-
-    @Override
-    public PrintStream getPipedOutputStreamCommandsToRemotePrinter() {
-        return pipedOutputStreamCommandsToRemotePrinter;
     }
 
     @Override
@@ -158,16 +167,20 @@ public class RemoteClientImpl implements RemoteClient {
         public void run() {
             try {
                 while (!isInterrupted()) {
-                        InputStream input = inputStream;
-                        byte buf[] = new byte[1024];
+                    byte buf[] = new byte[1024];
 
-                        // BufferedReader reader, reader.readLine() will not work...
-                        int read = input.read(buf);
+                    // BufferedReader reader, reader.readLine() will not work...
+                    int read = inputStream.read(buf);
 
-                        if (read == -1) {
-                            System.out.println("End of remote stream");
-                            break;
-                        }
+                    final WaitForRemoteReply waitForRemoteReply = waitForReply.getAndSet(null);
+                    if (waitForRemoteReply != null) {
+                        waitForRemoteReply.latch.countDown();
+                    }
+
+                    if (read == -1) {
+                        System.out.println("End of remote stream");
+                        break;
+                    }
                     String rcvd = new String(buf, 0, read, "UTF-8");
                     System.out.println(prefix + ": " + rcvd);
                 }
@@ -187,13 +200,26 @@ public class RemoteClientImpl implements RemoteClient {
     }
 
     @Override
-    public PrintStream getChannelShellToRemotePrinter() {
-        return pipedOutputStreamCommandsToRemotePrinter;
+    public void enqueue(Runnable command) {
+        command.run();
     }
 
     @Override
-    public void enqueue(Runnable command) {
-        command.run();
+    public void sendShellCommand(String cmdToRun) {
+        pipedOutputStreamCommandsToRemotePrinter.println(cmdToRun);
+        pipedOutputStreamCommandsToRemotePrinter.flush();
+    }
+
+    @Override
+    public void sendShellCommand(String cmdToRun, int waitForReplyForMillis) {
+        final WaitForRemoteReply waitForRemoteReply = new WaitForRemoteReply(new CountDownLatch(1), waitForReplyForMillis);
+        waitForReply.set(waitForRemoteReply);
+        sendShellCommand(cmdToRun);
+        try {
+            waitForRemoteReply.latch.await(waitForReplyForMillis, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

@@ -4,7 +4,6 @@ import com.jcraft.jsch.JSchException;
 import org.sanchouss.idea.plugins.instantpatch.Checks;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.HashSet;
 
 /**
@@ -29,10 +28,7 @@ public class RemoteProcessRunnerShell {
         remoteClient.arrangeShellCommand(sh -> {
             System.out.println("EXEC: " + "Executing command: " + cmdToRun);
             // send the cmd to channel, do not wait for the response here
-            PrintStream printer = remoteClient.getChannelShellToRemotePrinter();
-
-            printer.println(cmdToRun);
-            printer.flush();
+            remoteClient.sendShellCommand(cmdToRun, 3000);
         });
 /*
         remoteClient.channelShellInputs = new InputStream[] {channelShell.getInputStream(), channelShell.getExtInputStream()};

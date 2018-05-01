@@ -10,8 +10,6 @@ import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettings;
 import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettingsCallback;
 
 import java.io.IOException;
-import java.io.PipedOutputStream;
-import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
@@ -98,24 +96,6 @@ public class RemoteClientProxy implements RemoteClient {
     }
 
     @Override
-    public PipedOutputStream getPipedOutputStreamCommandsToRemote() {
-        RemoteClientImpl client = actual.get();
-        if (client != null) {
-            return client.getPipedOutputStreamCommandsToRemote();
-        }
-        throw getRuntimeException();
-    }
-
-    @Override
-    public PrintStream getPipedOutputStreamCommandsToRemotePrinter() {
-        RemoteClientImpl client = actual.get();
-        if (client != null) {
-            return client.getPipedOutputStreamCommandsToRemotePrinter();
-        }
-        throw getRuntimeException();
-    }
-
-    @Override
     public Session getSession() {
         RemoteClientImpl client = actual.get();
         if (client != null) {
@@ -135,19 +115,30 @@ public class RemoteClientProxy implements RemoteClient {
     }
 
     @Override
-    public PrintStream getChannelShellToRemotePrinter() {
-        RemoteClientImpl client = actual.get();
-        if (client != null) {
-            return client.getChannelShellToRemotePrinter();
-        }
-        throw getRuntimeException();
-    }
-
-    @Override
     public void enqueue(Runnable command) {
 
         pluginSettingsCallback.getPluginSettings(false);
         executorService.submit(command);
+    }
+
+    @Override
+    public void sendShellCommand(String cmdToRun) {
+        RemoteClientImpl client = actual.get();
+        if (client != null) {
+            client.sendShellCommand(cmdToRun);
+        } else {
+            throw getRuntimeException();
+        }
+    }
+
+    @Override
+    public void sendShellCommand(String cmdToRun, int waitForReplyForMillis) {
+        RemoteClientImpl client = actual.get();
+        if (client != null) {
+            client.sendShellCommand(cmdToRun, waitForReplyForMillis);
+        } else {
+            throw getRuntimeException();
+        }
     }
 
     private boolean isConnectedWell() {
@@ -166,6 +157,7 @@ public class RemoteClientProxy implements RemoteClient {
                 sftpCommand.accept(this.getChannelSftp());
             } catch (SftpException e) {
                 exception.set(e);
+                throw new RuntimeException(e);
             }
 //        });
     }
@@ -182,6 +174,7 @@ public class RemoteClientProxy implements RemoteClient {
                 shellCommand.accept(this.getChannelShell());
             } catch (SftpException e) {
                 exception.set(e);
+                throw new RuntimeException(e);
             }
 //        });
     }

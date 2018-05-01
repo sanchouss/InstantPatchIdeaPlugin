@@ -4,9 +4,6 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelShell;
 import com.jcraft.jsch.Session;
 
-import java.io.PipedOutputStream;
-import java.io.PrintStream;
-
 /**
  * Establishes session to remote host and create sftp/shell channels.
  *
@@ -18,10 +15,6 @@ public interface RemoteClient {
     void arrangeSftpCommand(SftpCommand<ChannelSftp> sftpCommand);
 
     void arrangeShellCommand(ShellCommand<ChannelShell> shellCommand);
-
-    PipedOutputStream getPipedOutputStreamCommandsToRemote();
-
-    PrintStream getPipedOutputStreamCommandsToRemotePrinter();
 
     void disconnect();
 
@@ -40,7 +33,9 @@ public interface RemoteClient {
         return rpr;
     }
 
-    PrintStream getChannelShellToRemotePrinter();
-
     void enqueue(Runnable command);
+
+    void sendShellCommand(String cmdToRun);
+
+    void sendShellCommand(String cmdToRun, int waitForReplyForMillis);
 }

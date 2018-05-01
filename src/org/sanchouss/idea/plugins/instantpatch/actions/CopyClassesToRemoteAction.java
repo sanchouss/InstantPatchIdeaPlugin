@@ -260,6 +260,7 @@ class CopyClassesToRemoteAction extends AnAction {
                     RemoteJobCopy.FileSet fileSet = jobEntry.getValue();
 
                     runnerShell.mkdir(fileSet.toRemoteRelativeDir, jobs.existAlreadyDirs);
+//                    patcher.cd(fileSet.toRemoteRelativeDir);    // prevent No such file
                     patcher.uploadFiles(fileSet.fromLocalDir, fileSet.toRemoteRelativeDir, fileSet.files);
 
                     copiedFiles += fileSet.files.size();
