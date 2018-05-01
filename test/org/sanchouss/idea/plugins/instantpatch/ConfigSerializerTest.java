@@ -3,11 +3,11 @@ package org.sanchouss.idea.plugins.instantpatch;
 import org.sanchouss.idea.plugins.instantpatch.settings.Configuration;
 import org.sanchouss.idea.plugins.instantpatch.settings.Host;
 import org.sanchouss.idea.plugins.instantpatch.settings.Process;
-import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import javax.xml.bind.JAXBException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Created by Alexander Perepelkin
@@ -31,9 +31,9 @@ public class ConfigSerializerTest {
 
         String classFilesDir = "/home/sanchouss/patches/";
         String tempDir = "/home/sanchouss/tmp/";
-        ArrayList<String> etcFilesDirs = Lists.newArrayList("/usr/bin/", "/var/lib/");
+        ArrayList<String> etcFilesDirs = new ArrayList<>(Arrays.asList("/usr/bin/", "/var/lib/"));
 
-        ArrayList<Process> alist = Lists.newArrayList();
+        ArrayList<Process> alist = new ArrayList<>();
         {
             Process proc = new Process();
             proc.setProcessName("server-process1");
@@ -57,7 +57,7 @@ public class ConfigSerializerTest {
             alist.add(proc);
         }
 
-        ArrayList<Host> hlist = Lists.newArrayList();
+        ArrayList<Host> hlist = new ArrayList<>();
         {
             String username = "sanchouss";
             String hostname = "hosta";

@@ -1,8 +1,5 @@
 package org.sanchouss.idea.plugins.instantpatch.actions;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
@@ -44,7 +41,7 @@ class CopyClassesToRemoteAction extends AnAction {
     private final RemoteProcessSftpPatcher patcher;
 
     private final RemoteProcessRunnerShell runnerShell;
-    private final HashSet<String> allowedResources = Sets.newHashSet(Arrays.asList(".xml", ".json", ".properties",".csv", ".sh"));
+    private final HashSet<String> allowedResources = new HashSet<>(Arrays.asList(".xml", ".json", ".properties",".csv", ".sh"));
     private final String actionTitle = "Copying classes to remote";
     private final RemoteClient remoteClient;
 
@@ -64,11 +61,11 @@ class CopyClassesToRemoteAction extends AnAction {
             final RemoteJobCopy jobs = new RemoteJobCopy();
             final VirtualFile[] files = e.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY);
 
-            final LinkedList<VirtualFile> filesToCopy = Lists.newLinkedList(Arrays.asList(files));
+            final LinkedList<VirtualFile> filesToCopy = new LinkedList<>(Arrays.asList(files));
             System.out.println("Got " + filesToCopy.size() + " items to copy chosen initially");
             System.out.println("Allowed to copy resources are: " + allowedResources);
             final ProjectFileIndex index =  ProjectRootManager.getInstance(project).getFileIndex();
-            final HashSet<String> filesArrangedForCopy = Sets.newHashSet();
+            final HashSet<String> filesArrangedForCopy = new HashSet<>();
             while (!filesToCopy.isEmpty()) {
                 final VirtualFile file = filesToCopy.removeFirst();
                 final Module module = index.getModuleForFile(file);
@@ -146,8 +143,8 @@ class CopyClassesToRemoteAction extends AnAction {
     }
 
     private static class RemoteJobCopy {
-        private final HashMap<String, FileSet> jobs = Maps.newHashMap();
-        private final HashSet<String> existAlreadyDirs = Sets.newHashSet();
+        private final HashMap<String, FileSet> jobs = new HashMap<>();
+        private final HashSet<String> existAlreadyDirs = new HashSet<>();
 
         FileSet submit(String outputClassesLocalDir, String toRemoteRelativeDir) {
             FileSet copyFilesJob = jobs.get(outputClassesLocalDir);
@@ -159,7 +156,7 @@ class CopyClassesToRemoteAction extends AnAction {
         }
 
         TreeMap<String, RemoteJobCopy.FileSet> getJobsOrderedByPath() {
-            TreeMap<String, RemoteJobCopy.FileSet> ordered = Maps.newTreeMap();
+            TreeMap<String, RemoteJobCopy.FileSet> ordered = new TreeMap<>();
             ordered.putAll(jobs);
             return  ordered;
         }
@@ -167,7 +164,7 @@ class CopyClassesToRemoteAction extends AnAction {
         class FileSet {
             private final String fromLocalDir;
             private final String toRemoteRelativeDir;
-            private final List<String> files = Lists.newArrayList();
+            private final List<String> files = new ArrayList<>();
 
             FileSet(String fromLocalDir, String toRemoteRelativeDir) {
                 this.fromLocalDir = fromLocalDir;
@@ -200,7 +197,7 @@ class CopyClassesToRemoteAction extends AnAction {
             }
         });
 
-        ArrayList<String> res = Lists.newArrayList();
+        ArrayList<String> res = new ArrayList<>();
         for (File clazz: relatedClasses) {
             res.add(clazz.getName());
         }

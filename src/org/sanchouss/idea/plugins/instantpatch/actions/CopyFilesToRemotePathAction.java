@@ -4,7 +4,6 @@ import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginRegistrat
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClient;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessSftpPatcher;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessRunnerShell;
-import com.google.common.collect.Lists;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
@@ -48,7 +47,7 @@ class CopyFilesToRemotePathAction extends AnAction {
 
         try {
             final VirtualFile[] files = e.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY);
-            final LinkedList<VirtualFile> filesToCopy = Lists.newLinkedList(Arrays.asList(files));
+            final LinkedList<VirtualFile> filesToCopy = new LinkedList<>(Arrays.asList(files));
 
             remoteClient.enqueue(new CopyFilesToRemotePathCommand(filesToCopy));
         } catch (Exception e1) {
@@ -76,7 +75,7 @@ class CopyFilesToRemotePathAction extends AnAction {
                     if (!file.isDirectory()) {
                         // upload to user's tmp dir, can not upload to root's dir via sftp
                         final String fileDir = file.getParent().getPath();
-                        patcher.uploadFiles(fileDir, "./", Lists.newArrayList(file.getName()));
+                        patcher.uploadFiles(fileDir, "./", Arrays.asList(file.getName()));
                         try {
                             final String tmpFile = tmpDir + file.getName(),
                                 tmpFileLF = tmpDir + file.getName() + ".lf";

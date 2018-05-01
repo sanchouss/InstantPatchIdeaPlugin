@@ -7,3 +7,7 @@
 ## 0.0.2 - 2017-02-05
 
 - Remote commands are processed in background; reduced balloon messages
+
+## 0.0.3 - 2017-02-07
+
+- Wait for reply from remote host prior to issuing next command
