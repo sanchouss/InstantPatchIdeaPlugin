@@ -19,3 +19,7 @@
 ## 0.0.5 - 2017-06-13
 
 - Informative error messages when remote command fails
+
+## 0.0.6 - 2018-02-15
+
+- Informative error messages when connect to remote server fails

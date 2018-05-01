@@ -19,9 +19,10 @@ import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClient;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessRunnerShell;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessSftpPatcher;
 import org.sanchouss.idea.plugins.instantpatch.settings.Process;
+import org.sanchouss.idea.plugins.instantpatch.util.ClassFinder;
+import org.sanchouss.idea.plugins.instantpatch.util.ExceptionUtils;
+import org.sanchouss.idea.plugins.instantpatch.util.NotJavaResourceException;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -70,6 +71,7 @@ class CopyClassesToRemoteAction extends AnAction {
             System.out.println("Allowed to copy resources are: " + allowedResources);
             final ProjectFileIndex index =  ProjectRootManager.getInstance(project).getFileIndex();
             final HashSet<String> filesArrangedForCopy = new HashSet<>();
+
             while (!filesToCopy.isEmpty()) {
                 final VirtualFile file = filesToCopy.removeFirst();
                 final Module module = index.getModuleForFile(file);
@@ -90,12 +92,15 @@ class CopyClassesToRemoteAction extends AnAction {
                         final String outputClassesRelativeDir = packagePath; //StringUtils.join(pkg, SLASH_LINUX_STYLE);
                         final String outputClassesLocalDir = moduleOutputPath + SLASH_LINUX_STYLE + outputClassesRelativeDir;
 
-                        final List<String> classes = getClassFilesForJava(outputClassesLocalDir, file);
+                        final ClassFinder classFinder = new ClassFinder(outputClassesLocalDir, file);
+                        final List<String> classes = classFinder.getClassFilesForJava();
                         if (classes.size() == 0) {
-                            throw new IllegalArgumentException("File " + file + " does not have compiled class in " + outputClassesLocalDir);
+                            throw new IllegalArgumentException("File " + file + " does not have compiled class in "
+                                + outputClassesLocalDir);
                         }
                         // TODO: check that timestamp of classes is later that of sources
-                        System.out.println("Src " + file.getPath() + "; module: " + module.getName() + "; bin loc dir: " + outputClassesLocalDir + "; out dir: " + outputClassesRelativeDir + "; classes: " + classes);
+                        System.out.println("Src " + file.getPath() + "; module: " + module.getName() + "; bin loc dir: "
+                            + outputClassesLocalDir + "; out dir: " + outputClassesRelativeDir + "; classes: " + classes);
 
                         RemoteJobCopy.FileSet copyFilesJob = jobs.submit(outputClassesLocalDir, outputClassesRelativeDir);
                         for (String class_ : classes) {
@@ -139,7 +144,7 @@ class CopyClassesToRemoteAction extends AnAction {
         } catch (Exception e1) {
             e1.printStackTrace();
             Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
-                e1.getMessage(), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
+                ExceptionUtils.getStructuredErrorString(e1), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
         }
     }
 
@@ -180,44 +185,6 @@ class CopyClassesToRemoteAction extends AnAction {
                 this.fromLocalDir = fromLocalDir;
                 this.toRemoteRelativeDir = toRemoteRelativeDir;
             }
-        }
-    }
-
-    private List<String> getClassFilesForJava(String outClassesDir, VirtualFile file) {
-        String javaFileName = file.getName();
-        if (!javaFileName.endsWith(".java")) {
-            throw new NotJavaResourceException(javaFileName + " filename must end with .java");
-        }
-        final String classPrefix = javaFileName.substring(0, javaFileName.indexOf(".java"));
-        final String nestedClassPrefix = classPrefix; // not only $...
-        final String className = classPrefix + ".class";
-
-        File outClassesDirFile = new File(outClassesDir);
-        if (!outClassesDirFile.exists()) {
-            throw new IllegalArgumentException(outClassesDir + " filename must exist");
-        }
-        if (!outClassesDirFile.isDirectory()) {
-            throw new IllegalArgumentException(outClassesDir + " filename must be a directory");
-        }
-        File relatedClasses[] = outClassesDirFile.listFiles(new FilenameFilter() {
-            //todo: there are more cases: .java may produce other classes than public and its inners
-            @Override
-            public boolean accept(File dir, String name) {
-                return (name.equals(className) || name.startsWith(nestedClassPrefix));
-            }
-        });
-
-        ArrayList<String> res = new ArrayList<>();
-        for (File clazz: relatedClasses) {
-            res.add(clazz.getName());
-        }
-
-        return res;
-    }
-
-    private class NotJavaResourceException extends RuntimeException {
-        public NotJavaResourceException(String message) {
-            super(message);
         }
     }
 
@@ -282,7 +249,7 @@ class CopyClassesToRemoteAction extends AnAction {
             } catch (Exception e1) {
                 e1.printStackTrace();
                 Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
-                    e1.toString(), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
+                    ExceptionUtils.getStructuredErrorString(e1), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
             }
         }
     }
