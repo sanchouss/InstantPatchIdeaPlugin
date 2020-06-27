@@ -1,7 +1,7 @@
-<idea-plugin version="2">
+<idea-plugin>
   <id>org.sanchouss.idea.plugins.instantpatch</id>
   <name>Instant Patch Remote Java Process</name>
-  <version>0.0.6</version>
+  <version>0.0.7</version>
   <vendor email="sanchouss@github.com" url="http://github.com/sanchouss">Alexander Perepelkin</vendor>
 
   <description><![CDATA[
@@ -10,7 +10,8 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      No changes
+      0.0.7 Fixing plugin verification results
+      0.0.6 Informative error messages when connect to remote server fails
     ]]>
   </change-notes>
 
@@ -22,6 +23,9 @@
   <!-- uncomment to enable plugin in all products
   <depends>com.intellij.modules.lang</depends>
   -->
+  <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.modules.xml</depends>
+
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
   </extensions>

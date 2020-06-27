@@ -23,3 +23,6 @@
 ## 0.0.6 - 2018-02-15
 
 - Informative error messages when connect to remote server fails
+
+## 0.0.7 - 2020-06-27
+- Fixing plugin verification results
