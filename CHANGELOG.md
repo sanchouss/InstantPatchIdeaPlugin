@@ -25,4 +25,4 @@
 - Informative error messages when connect to remote server fails
 
 ## 0.0.7 - 2020-06-27
-- Fixing plugin verification results
+- Fixing plugin verification results; move to gradle plugin

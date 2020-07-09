@@ -1,0 +1,77 @@
+<idea-plugin>
+  <id>org.sanchouss.idea.plugins.instantpatch</id>
+  <name>Instant Patch Remote Java Process</name>
+  <version>0.0.7</version>
+  <vendor email="sanchouss@github.com" url="http://github.com/sanchouss">Alexander Perepelkin</vendor>
+
+  <description><![CDATA[
+      Instant Patch Remote Java process by copying fresh .class files and resource files directly to remote host
+      via secure channels<br>
+    ]]></description>
+
+  <change-notes><![CDATA[
+      0.0.7 Fixing plugin verification results
+      0.0.6 Informative error messages when connect to remote server fails
+    ]]>
+  </change-notes>
+
+  <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
+  <idea-version since-build="193"/>
+
+  <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
+       on how to target different products -->
+  <!-- uncomment to enable plugin in all products
+  <depends>com.intellij.modules.lang</depends>
+  -->
+  <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.modules.xml</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <applicationService serviceImplementation="org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginService"/>
+  </extensions>
+
+<!--  <application-components>
+    &lt;!&ndash; Add your application components here &ndash;&gt;
+    <component>
+      &lt;!&ndash;<interface-class>com.intellij.openapi.components.PersistentStateComponent</interface-class> - better unique (cache)&ndash;&gt;
+      <implementation-class>org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginRegistration</implementation-class>
+    </component>
+  </application-components>-->
+
+  <project-components>
+    <!-- Add your project components here -->
+  </project-components>
+
+  <applicationListeners>
+    <listener class="org.sanchouss.idea.plugins.instantpatch.InstantPatchRemoteAppLifecycleListener" topic="com.intellij.ide.AppLifecycleListener"/>
+  </applicationListeners>
+
+  <projectListeners>
+    <listener class="org.sanchouss.idea.plugins.instantpatch.InstantPatchRemoteAppLifecycleListener" topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>
+  </projectListeners>
+
+  <actions>
+<!--
+    Always getting:
+    ERROR - nSystem.impl.ActionManagerImpl - class with name 'org.sanchouss.idea.plugins.instantpatch.actions.DumbAction' must be an instance of 'com.intellij.openapi.actionSystem.AnAction'; got org.sanchouss.idea.plugins.instantpatch.actions.DumbAction@6e9c7a5a [Plugin: org.sanchouss.idea.plugins.instantpatch]
+-->
+<!--
+        <action id="RemoteDumbAction"
+                class="org.sanchouss.idea.plugins.instantpatch.actions.DumbAction"
+                text="Remote DumbAction..."
+                description="DumbAction">
+          <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
+        </action>
+-->
+<!--
+        <group class="com.intellij.openapi.actionSystem.DefaultActionGroup" id="CopyRestartRemoteGroup" text="Copy/Restart Remote..." description="Copy Classes and restart processes on the remote server"
+               popup="true">
+            <action id="RemoteDumbAction" class="org.sanchouss.idea.plugins.instantpatch.actions.DumbAction" text="Remote DumbAction..."
+                    description="DumbAction">
+              <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt R"/>
+            </action>
+          <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
+        </group>
+-->
+  </actions>
+</idea-plugin>
