@@ -2,6 +2,8 @@ package org.sanchouss.idea.plugins.instantpatch;
 
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.junit.Assert;
@@ -24,7 +26,12 @@ public class ChooseFileTest {
         Assert.assertTrue(start.exists());
         final VirtualFile toSelect =
             LocalFileSystem.getInstance().findFileByIoFile(start);
-        FileChooser.chooseFile(descriptor, null, toSelect, virtualFile -> chosenFile.set(virtualFile.getCanonicalPath()));
+        VirtualFile[] virtualFiles = FileChooser.chooseFiles(descriptor, null, toSelect);
+        if (virtualFiles.length == 1) {
+            // ok
+        } else if (virtualFiles.length != 0) {
+            Messages.showErrorDialog((Project) null, "Single config file should be chosen", "Invalid File");
+        }
     }
 
 }

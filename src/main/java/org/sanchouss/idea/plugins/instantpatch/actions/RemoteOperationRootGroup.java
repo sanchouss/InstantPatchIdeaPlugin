@@ -1,18 +1,17 @@
 package org.sanchouss.idea.plugins.instantpatch.actions;
 
 import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Constraints;
 import org.sanchouss.idea.plugins.instantpatch.ConfigSerializer;
-import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginRegistration;
+import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginService;
 import org.sanchouss.idea.plugins.instantpatch.settings.Configuration;
 import org.sanchouss.idea.plugins.instantpatch.settings.Host;
-import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettings;
 import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettingsCallback;
+import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettingsState;
 import org.sanchouss.idea.plugins.instantpatch.util.ExceptionUtils;
 
 import javax.xml.bind.JAXBException;
@@ -25,12 +24,12 @@ public class RemoteOperationRootGroup extends com.intellij.openapi.actionSystem.
     private static final AnAction dumbAction = new DumbAction("Error initializing this plugin. See stderr...");
 
     private final AnAction reloadAction = new ReloadConfigAction(this);
-    private final PluginSettings pluginSettings;
+    private final PluginSettingsState pluginSettingsState;
 
-    public RemoteOperationRootGroup(PluginSettings pluginSettings) {
+    public RemoteOperationRootGroup(PluginSettingsState pluginSettingsState) {
 
         super("Copy/Restart Remote...", true);
-        this.pluginSettings = pluginSettings;
+        this.pluginSettingsState = pluginSettingsState;
 
         composeActions();
         // TODO: after sleep time pipes are closed - need to reopen them
@@ -39,11 +38,11 @@ public class RemoteOperationRootGroup extends com.intellij.openapi.actionSystem.
     void composeActions() {
         removeAll();
 
-        configPath = pluginSettings.configFile;
+        configPath = pluginSettingsState.configFile;
 
         try {
             if (configPath == null || configPath.isEmpty()) {
-                add(new DumbAction("Plugin is not set up"), Constraints.FIRST);
+                add(new DumbAction("Plugin has no config"), Constraints.FIRST);
             } else {
                 Configuration config = readConfig();
                 addActions(config);
@@ -51,37 +50,37 @@ public class RemoteOperationRootGroup extends com.intellij.openapi.actionSystem.
         } catch (Exception e) {
             add(dumbAction, Constraints.FIRST);
         } finally {
-            add(new PluginSettingsActionGroup(pluginSettings));
+            add(new PluginSettingsActionGroup(this, pluginSettingsState));
             add(reloadAction, Constraints.LAST);
         }
     }
 
     private void addActions(Configuration config) {
         System.out.println("Config " + configPath + " is read");
-        Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName,
-            "Config " + configPath + " is read", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
+        Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, "Loading " + InstantPatchRemotePluginService.shortName,
+            "Config " + configPath + " is read", NotificationType.INFORMATION));
 
         for (final Host host : config.getHosts()) {
-            AnAction action = new HostActionGroup(host, new PluginSettingsCallback(pluginSettings));
+            AnAction action = new HostActionGroup(host, new PluginSettingsCallback(pluginSettingsState));
             add(action);
-//            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName,
-//                "Host action " + host.getHostname() + " is created", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
+//            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, "Loading " + InstantPatchRemotePluginService.shortName,
+//                "Host action " + host.getHostname() + " is created", NotificationType.INFORMATION));
         }
         System.out.println("Action items (" + config.getHosts().size() + ") are created");
-//        Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName,
-//            "Action items (" + config.getHosts().size() + ") are created", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
+//        Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, "Loading " + InstantPatchRemotePluginService.shortName,
+//            "Action items (" + config.getHosts().size() + ") are created", NotificationType.INFORMATION));
     }
 
     private Configuration readConfig() {
             System.out.println("Reading config " + configPath + " ...");
-//            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName,
-//                    "Reading config " + configPath + " ...", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
+//            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, "Loading " + InstantPatchRemotePluginService.shortName,
+//                    "Reading config " + configPath + " ...", NotificationType.INFORMATION));
             try {
                 return ConfigSerializer.read(configPath);
             } catch (JAXBException e) {
                 e.printStackTrace();
-                Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Loading " + InstantPatchRemotePluginRegistration.shortName,
-                        "Error reading config " + configPath + ": " + ExceptionUtils.getStructuredErrorString(e), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
+                Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, "Loading " + InstantPatchRemotePluginService.shortName,
+                        "Error reading config " + configPath + ": " + ExceptionUtils.getStructuredErrorString(e), NotificationType.ERROR));
                 throw new RuntimeException(e);
             }
     }

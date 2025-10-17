@@ -5,23 +5,20 @@ import com.jcraft.jsch.Session;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteAuth;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClientImpl;
 
+import static org.sanchouss.idea.plugins.instantpatch.JschCredentials.*;
+
 /**
  * Created by Alexander Perepelkin
  */
 
 public class ShellTest {
-    public static void main(String[] arg){
+    public static void main(String[] arg) {
 
-        try{
-            //jsch.setKnownHosts("/home/foo/.ssh/known_hosts");
+        try {
+            RemoteClientImpl impl = new RemoteClientImpl(host, user, 22,
+                    new RemoteAuth(privateKey, passphrase));
 
-            String user = "user";
-            String host = "host.com";
-            int port = 22;
-
-            RemoteClientImpl rc = new RemoteClientImpl(host, user, port, new RemoteAuth("", ""));
-
-            Session session= rc.getSession();
+            Session session = impl.getSession();
 
 
             // It must not be recommended, but if you want to skip host-key check,
@@ -32,7 +29,7 @@ public class ShellTest {
 //            session.connect(30000);   // making a connection with timeout.
 
 //            Channel channel=session.openChannel("shell");
-            Channel channel= rc.getChannelShell();
+            Channel channel = impl.getChannelShell();
 
             // Enable agent-forwarding.
             //((ChannelShell)channel).setAgentForwarding(true);
@@ -60,9 +57,8 @@ public class ShellTest {
       */
 
             //channel.connect();
-            channel.connect(3*1000);
-        }
-        catch(Exception e){
+            channel.connect(3 * 1000);
+        } catch (Exception e) {
             System.out.println(e);
         }
     }

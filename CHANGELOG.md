@@ -26,3 +26,8 @@
 
 ## 0.0.7 - 2020-06-27
 - Fixing plugin verification results; move to gradle plugin
+- 
+## 0.0.8 - 2025-10-20
+- Fix build with `Gradle IntelliJ Plugin (1.x)` plugin
+- Replace deprecated interfaces with newer ones
+- Replace abandoned original jsch library with maintained fork

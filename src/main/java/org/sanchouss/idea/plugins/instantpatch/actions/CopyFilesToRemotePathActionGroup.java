@@ -1,8 +1,7 @@
 package org.sanchouss.idea.plugins.instantpatch.actions;
 
-import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClient;
 import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
+import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClient;
 
 import java.util.List;
 
@@ -24,7 +23,4 @@ class CopyFilesToRemotePathActionGroup extends com.intellij.openapi.actionSystem
             e.printStackTrace();
         }
     }
-
-    @Override
-    public void actionPerformed(AnActionEvent anActionEvent) {}
 }

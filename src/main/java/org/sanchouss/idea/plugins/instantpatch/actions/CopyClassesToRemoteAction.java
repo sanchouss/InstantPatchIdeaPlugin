@@ -1,20 +1,19 @@
 package org.sanchouss.idea.plugins.instantpatch.actions;
 
 import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
-import com.intellij.openapi.compiler.CompilerPaths;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginRegistration;
+import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginService;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClient;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessRunnerShell;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessSftpPatcher;
@@ -23,14 +22,7 @@ import org.sanchouss.idea.plugins.instantpatch.util.ClassFinder;
 import org.sanchouss.idea.plugins.instantpatch.util.ExceptionUtils;
 import org.sanchouss.idea.plugins.instantpatch.util.NotJavaResourceException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.sanchouss.idea.plugins.instantpatch.Checks.SLASH_LINUX_STYLE;
@@ -38,7 +30,7 @@ import static org.sanchouss.idea.plugins.instantpatch.Checks.SLASH_LINUX_STYLE;
 
 /**
  * Created by Alexander Perepelkin
- *
+ * <p>
  * //todo: work on notifications: connections start/finish/fail, other actions - finish/fail
  */
 class CopyClassesToRemoteAction extends AnAction {
@@ -46,7 +38,7 @@ class CopyClassesToRemoteAction extends AnAction {
 
     private final RemoteProcessRunnerShell runnerShell;
     private final HashSet<String> allowedResources = new HashSet<>(
-        Arrays.asList(".xml", ".json", ".properties",".csv", ".sh", ".sql"));
+            Arrays.asList(".xml", ".json", ".properties", ".csv", ".sh", ".sql"));
     private final String actionTitle = "Copying classes to remote";
     private final RemoteClient remoteClient;
 
@@ -69,7 +61,7 @@ class CopyClassesToRemoteAction extends AnAction {
             final LinkedList<VirtualFile> filesToCopy = new LinkedList<>(Arrays.asList(files));
             System.out.println("Got " + filesToCopy.size() + " classes to copy chosen initially");
             System.out.println("Allowed to copy resources are: " + allowedResources);
-            final ProjectFileIndex index =  ProjectRootManager.getInstance(project).getFileIndex();
+            final ProjectFileIndex index = ProjectRootManager.getInstance(project).getFileIndex();
             final HashSet<String> filesArrangedForCopy = new HashSet<>();
 
             while (!filesToCopy.isEmpty()) {
@@ -78,7 +70,12 @@ class CopyClassesToRemoteAction extends AnAction {
                 if (module == null) {
                     throw new RuntimeException("Can not find module for file " + file);
                 }
-                final String moduleOutputPath = CompilerPaths.getModuleOutputPath(module, false);
+                VirtualFile compilerOutputPath = CompilerModuleExtension.getInstance(module).getCompilerOutputPath();
+                if (compilerOutputPath == null) {
+                    throw new RuntimeException("Module " + module.getName() + " has no compiler output path!");
+                }
+                final String moduleOutputPath = compilerOutputPath.getPath();
+
                 // construct proper class file location from *source folder *source file location *out folder
                 final VirtualFile[] sourceRoots = ModuleRootManager.getInstance(module).getSourceRoots();
 
@@ -95,12 +92,12 @@ class CopyClassesToRemoteAction extends AnAction {
                         final ClassFinder classFinder = new ClassFinder(outputClassesLocalDir, file);
                         final List<String> classes = classFinder.getClassFilesForJava();
                         if (classes.size() == 0) {
-                            throw new IllegalArgumentException("File " + file + " does not have compiled class in "
-                                + outputClassesLocalDir);
+                            throw new IllegalArgumentException("Source file " + file + " does not have compiled class in "
+                                    + outputClassesLocalDir);
                         }
                         // TODO: check that timestamp of classes is later that of sources
                         System.out.println("Src " + file.getPath() + "; module: " + module.getName() + "; bin loc dir: "
-                            + outputClassesLocalDir + "; out dir: " + outputClassesRelativeDir + "; classes: " + classes);
+                                + outputClassesLocalDir + "; out dir: " + outputClassesRelativeDir + "; classes: " + classes);
 
                         RemoteJobCopy.FileSet copyFilesJob = jobs.submit(outputClassesLocalDir, outputClassesRelativeDir);
                         for (String class_ : classes) {
@@ -110,14 +107,14 @@ class CopyClassesToRemoteAction extends AnAction {
                             filesArrangedForCopy.add(class_);
                         }
                     } catch (NotJavaResourceException njre) {
-                        // todo: locate resource ouput directory and take files from output dir
+                        // todo: locate resource output directory and take files from output dir
 //                        final String outputResourceRelativePath = findOutResourceRelativePath(packagePath);
 //                        final String outputResourcesLocalDir = moduleOutputPath + SLASH_LINUX_STYLE + outputResourceRelativePath;
                         final String outputResourceRelativePath = packagePath;
                         final String outputResourcesLocalDir = file.getParent().getPath();
                         // look for allowed resources files
                         final String fname = file.getName();
-                        for (String ar: allowedResources) {
+                        for (String ar : allowedResources) {
                             if (fname.endsWith(ar)) {
 //                                if (outputResourceRelativePath == null) {
 //                                    System.out.println("Can not find 'resources' subdirectory within the path " + packagePath);
@@ -134,17 +131,17 @@ class CopyClassesToRemoteAction extends AnAction {
             }
 
             if (jobs.jobs.size() == 0) {
-                Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
-                    "No files are to be copied. Allowed resources are .java and the following files: " +
-                        allowedResources.stream().map(s -> "*" + s).collect(Collectors.joining(", ")),
-                    NotificationType.WARNING, NotificationListener.URL_OPENING_LISTENER));
+                Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, actionTitle,
+                        "No files are to be copied. Allowed resources are .java and the following files: " +
+                                allowedResources.stream().map(s -> "*" + s).collect(Collectors.joining(", ")),
+                        NotificationType.WARNING));
             } else {
                 remoteClient.enqueue(new CopyClassesToRemoteCommand(jobs));
             }
         } catch (Exception e1) {
             e1.printStackTrace();
-            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
-                ExceptionUtils.getStructuredErrorString(e1), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
+            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, actionTitle,
+                    ExceptionUtils.getStructuredErrorString(e1), NotificationType.ERROR));
         }
     }
 
@@ -173,7 +170,7 @@ class CopyClassesToRemoteAction extends AnAction {
         TreeMap<String, RemoteJobCopy.FileSet> getJobsOrderedByPath() {
             TreeMap<String, RemoteJobCopy.FileSet> ordered = new TreeMap<>();
             ordered.putAll(jobs);
-            return  ordered;
+            return ordered;
         }
 
         class FileSet {
@@ -190,7 +187,7 @@ class CopyClassesToRemoteAction extends AnAction {
 
     private String getPackagePath(VirtualFile[] sourceRoots, VirtualFile file) {
         VirtualFile sourceFolder = null;
-        for (VirtualFile sourceRoot: sourceRoots) {
+        for (VirtualFile sourceRoot : sourceRoots) {
             VirtualFile parent = file.getParent();
             while (parent != null) {
                 if (parent.equals(sourceRoot)) {
@@ -209,10 +206,10 @@ class CopyClassesToRemoteAction extends AnAction {
         }
 
         final String res = (file.getParent() == sourceFolder)
-            // means no package hierarchy
-            ? ""
-            // strip leading slash
-            : file.getParent().getPath().substring(sourceFolder.getPath().length()+1);
+                // means no package hierarchy
+                ? ""
+                // strip leading slash
+                : file.getParent().getPath().substring(sourceFolder.getPath().length() + 1);
 
         return res;
     }
@@ -230,10 +227,11 @@ class CopyClassesToRemoteAction extends AnAction {
 
                 int copiedFiles = 0;
                 TreeMap<String, RemoteJobCopy.FileSet> jobsOrdered = jobs.getJobsOrderedByPath();
-                for (Map.Entry<String, RemoteJobCopy.FileSet> jobEntry: jobsOrdered.entrySet()) {
+                for (Map.Entry<String, RemoteJobCopy.FileSet> jobEntry : jobsOrdered.entrySet()) {
                     RemoteJobCopy.FileSet fileSet = jobEntry.getValue();
 
                     runnerShell.mkdir(fileSet.toRemoteRelativeDir, jobs.existAlreadyDirs);
+                    // todo: if directory was absent, then newly created might not be seen immediately
 //                    patcher.cd(fileSet.toRemoteRelativeDir);    // prevent No such file
                     patcher.uploadFiles(fileSet.fromLocalDir, fileSet.toRemoteRelativeDir, fileSet.files);
 
@@ -243,13 +241,13 @@ class CopyClassesToRemoteAction extends AnAction {
                 String msg = "Uploaded " + copiedFiles + " files to " + jobsOrdered.size() + " remote dirs";
                 System.out.println(msg);
 
-                Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
-                    msg, NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
+                Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, actionTitle,
+                        msg, NotificationType.INFORMATION));
 
             } catch (Exception e1) {
                 e1.printStackTrace();
-                Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
-                    ExceptionUtils.getStructuredErrorString(e1), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
+                Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, actionTitle,
+                        ExceptionUtils.getStructuredErrorString(e1), NotificationType.ERROR));
             }
         }
     }

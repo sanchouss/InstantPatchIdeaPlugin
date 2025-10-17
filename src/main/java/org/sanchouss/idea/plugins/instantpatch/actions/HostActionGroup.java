@@ -1,8 +1,6 @@
 package org.sanchouss.idea.plugins.instantpatch.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataContext;
 import org.sanchouss.idea.plugins.instantpatch.Utils;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClientProxy;
 import org.sanchouss.idea.plugins.instantpatch.settings.Host;
@@ -13,7 +11,6 @@ import java.util.Optional;
 
 /**
  * Created by Alexander Perepelkin
- *
  */
 class HostActionGroup extends com.intellij.openapi.actionSystem.DefaultActionGroup {
     private final Host host;
@@ -41,22 +38,10 @@ class HostActionGroup extends com.intellij.openapi.actionSystem.DefaultActionGro
             add(reconnect);
         } catch (Exception e) {
             add(new DumbAction(host.getHostname() + ": Exception while creating host menu group item. See stderr..."));
+            System.err.println(e);
         } finally {
             this.remoteClientProxy = proxy;
             this.reconnectAction = Optional.ofNullable(reconnect);
         }
-    }
-
-    /**
-     * @return true if {@link #actionPerformed(AnActionEvent)} should be called
-     */
-    @Override
-    public boolean canBePerformed(DataContext context) {
-        return true;
-    }
-
-    @Override
-    public void actionPerformed(AnActionEvent anActionEvent) {
-        // Note: does not work for group
     }
 }

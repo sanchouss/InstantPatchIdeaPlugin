@@ -1,17 +1,20 @@
 # InstantPatchIdeaPlugin
-Instant Patch Remote Java process by copying fresh .class files and resource files directly to remote host via secure
+Instant Patch Remote Java process by copying freshly compiled .class files and resource files directly to remote host via secure
 channels.
 
 Description
 -------------------------------------------------------------------------------
 
-Select Java classes and upload them onto remote server right from IntelliJ Idea. Restart java process from IDE afterwards.
+### Main goal
+This plugin allows you to **quickly upload compiled `.class` files** to a remote server directly from **IntelliJ IDEA**, and then **restart the remote Java process** — all without leaving the IDE.
 
-Select *.java files which you just changed and compiled; appropriate .class files will be located
-in the output directory of IntelliJ Idea IDE and copied to the remote server. Target directory for the .class files is
-specified in the plugin's configuration file (you must have write permissions to that directory on remote server).
-
-Non-Java (resource) files may be copied as well if selected.
+### How It Works
+* **Select Java files** `(.java)` that you’ve modified and compiled in the IntelliJ project tree.
+* Choose the option to **copy them to the remote server**.
+* The plugin automatically finds the corresponding `.class` files in IntelliJ’s **output directory** and uploads them. 
+* The **remote destination path** for .class files is configured via the plugin’s XML settings. 
+* You must have **write access** to the target directory on remote server.
+* You can also upload **non-Java (resource) files**, as long as they're selected.
 
 After remote patch directory is filled with new .class files, you can restart remote process from the plugin's menu.
 You may want to modify the process startup shell script as well. The patch catalog with fresh .class files is better to be the very first entry
@@ -20,6 +23,27 @@ first copied into remote temporary directory you have write access into, and the
 
 You will need to specify path to your private key file for connecting to the remote host securely. Passphrase is asked
 separately and is not stored anywhere.
+
+---
+
+### Restarting the Remote Java Process
+
+Once the updated `.class` files are uploaded:
+
+- You can **restart the remote Java process** from the plugin menu.
+- Modify the remote **startup shell script** so that the patch directory is the **first entry in the `CLASSPATH`**.
+- If the shell script for remote process is located in a **system directory**:
+    - Copy it first to a **temporary directory** where you have write access.
+    - Then use `sudo` to move it into the system location, replacing the original.
+
+---
+
+### Remote Access & Security
+
+- Configure the **path to your private SSH key** for secure access to the remote server.
+- If your key has a **passphrase**, you’ll be prompted to enter it when connecting.
+- **Note:** The passphrase is **never stored** by the plugin.
+
 
 Installation
 -------------------------------------------------------------------------------
@@ -41,69 +65,78 @@ Then right click on any file in Project view and choose
 
 to set up plugin configuration file and path to your private key file.
 
+If you changed config file (added entries, etc.), then choose
+
       Copy/Restart Remote... → Reload plugin config
 
-will apply new configuration.
+to apply new configuration.
 
-Sample plugin configuration file:
+### Sample plugin configuration file
+Save on disk and choose it from plugin menu.
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configuration>
+  <hostsList>
+    <host>
+      <hostname>host.a</hostname>
+      <username>instantpatch</username>
+      <processesList>
+        <process>
+          <classFilesDirectory>/home/instantpatch/classes/</classFilesDirectory>
+          <processDirectory>/home/instantpatch/myservice/</processDirectory>
+          <processName>a.myservice</processName>
+          <processStartCommand>systemctl --user start myservice.service</processStartCommand>
+          <processStopCommand>systemctl --user stop myservice.service</processStopCommand>
+          <remoteDirectories>/usr/bin/</remoteDirectories>
+          <remoteDirectories>/var/lib/</remoteDirectories>
+          <remoteDirectories>/home/instantpatch/resources/</remoteDirectories>
+          <temporaryDirectory>/home/instantpatch/tmp_ftp/</temporaryDirectory>
+        </process>
+        <process>
+          <classFilesDirectory>/home/instantpatch/classes/</classFilesDirectory>
+          <processDirectory>/usr/bin/</processDirectory>
+          <processName>a.server-process</processName>
+          <processStartCommand>server-process start</processStartCommand>
+          <processStopCommand>server-process stop</processStopCommand>
+          <remoteDirectories>/usr/bin/</remoteDirectories>
+          <remoteDirectories>/var/lib/</remoteDirectories>
+          <remoteDirectories>/home/instantpatch/resources/</remoteDirectories>
+          <temporaryDirectory>/home/instantpatch/tmp_ftp/</temporaryDirectory>
+        </process>
+      </processesList>
+    </host>
+    <host>
+      <hostname>host.b</hostname>
+      <username>instantpatch</username>
+      <processesList>
+        <process>
+          <classFilesDirectory>/home/instantpatch/classes/</classFilesDirectory>
+          <processDirectory>/home/instantpatch/myservice/</processDirectory>
+          <processName>b.myservice</processName>
+          <processStartCommand>systemctl --user start myservice.service</processStartCommand>
+          <processStopCommand>systemctl --user stop myservice.service</processStopCommand>
+          <remoteDirectories>/usr/bin/</remoteDirectories>
+          <remoteDirectories>/var/lib/</remoteDirectories>
+          <remoteDirectories>/home/instantpatch/resources/</remoteDirectories>
+          <temporaryDirectory>/home/instantpatch/tmp_ftp/</temporaryDirectory>
+        </process>
+        <process>
+          <classFilesDirectory>/home/instantpatch/classes/</classFilesDirectory>
+          <processDirectory>/usr/bin/</processDirectory>
+          <processName>b.server-process</processName>
+          <processStartCommand>server-process start</processStartCommand>
+          <processStopCommand>server-process stop</processStopCommand>
+          <remoteDirectories>/usr/bin/</remoteDirectories>
+          <remoteDirectories>/var/lib/</remoteDirectories>
+          <remoteDirectories>/home/instantpatch/resources/</remoteDirectories>
+          <temporaryDirectory>/home/instantpatch/tmp_ftp/</temporaryDirectory>
+        </process>
+      </processesList>
+    </host>
+  </hostsList>
+</configuration>
 
-      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-      <configuration>
-          <hostsList>
-              <host>
-                  <hostname>hosta</hostname>
-                  <username>sanchouss</username>
-                  <processesList>
-                      <process>
-                          <classFilesDirectory>/home/sanchouss/patches/</classFilesDirectory>
-                          <processDirectory>/usr/bin/</processDirectory>
-                          <processName>server-process1</processName>
-                          <processStartCommand>server-process1 start</processStartCommand>
-                          <processStopCommand>server-process1 stop</processStopCommand>
-                          <remoteDirectories>/usr/bin/</remoteDirectories>
-                          <remoteDirectories>/var/lib/</remoteDirectories>
-                          <temporaryDirectory>/home/sanchouss/tmp/</temporaryDirectory>
-                      </process>
-                      <process>
-                          <classFilesDirectory>/home/sanchouss/patches/</classFilesDirectory>
-                          <processDirectory>/usr/bin/</processDirectory>
-                          <processName>server-process2</processName>
-                          <processStartCommand>server-process2 start</processStartCommand>
-                          <processStopCommand>server-process2 stop</processStopCommand>
-                          <remoteDirectories>/usr/bin/</remoteDirectories>
-                          <remoteDirectories>/var/lib/</remoteDirectories>
-                          <temporaryDirectory>/home/sanchouss/tmp/</temporaryDirectory>
-                      </process>
-                  </processesList>
-              </host>
-              <host>
-                  <hostname>hostb</hostname>
-                  <username>sanchouss</username>
-                  <processesList>
-                      <process>
-                          <classFilesDirectory>/home/sanchouss/patches/</classFilesDirectory>
-                          <processDirectory>/usr/bin/</processDirectory>
-                          <processName>server-process1</processName>
-                          <processStartCommand>server-process1 start</processStartCommand>
-                          <processStopCommand>server-process1 stop</processStopCommand>
-                          <remoteDirectories>/usr/bin/</remoteDirectories>
-                          <remoteDirectories>/var/lib/</remoteDirectories>
-                          <temporaryDirectory>/home/sanchouss/tmp/</temporaryDirectory>
-                      </process>
-                      <process>
-                          <classFilesDirectory>/home/sanchouss/patches/</classFilesDirectory>
-                          <processDirectory>/usr/bin/</processDirectory>
-                          <processName>server-process2</processName>
-                          <processStartCommand>server-process2 start</processStartCommand>
-                          <processStopCommand>server-process2 stop</processStopCommand>
-                          <remoteDirectories>/usr/bin/</remoteDirectories>
-                          <remoteDirectories>/var/lib/</remoteDirectories>
-                          <temporaryDirectory>/home/sanchouss/tmp/</temporaryDirectory>
-                      </process>
-                  </processesList>
-              </host>
-          </hostsList>
-      </configuration>
+```
 
 FAQ
 -------------------------------------------------------------------------------

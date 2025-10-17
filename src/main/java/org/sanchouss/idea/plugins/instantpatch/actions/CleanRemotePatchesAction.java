@@ -1,12 +1,11 @@
 package org.sanchouss.idea.plugins.instantpatch.actions;
 
 import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginRegistration;
+import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginService;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClient;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessRunnerShell;
 import org.sanchouss.idea.plugins.instantpatch.settings.Process;
@@ -33,8 +32,8 @@ class CleanRemotePatchesAction extends AnAction {
             remoteClient.enqueue(new CleanRemotePatchesCommand());
         } catch (Exception e1) {
             e1.printStackTrace();
-            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
-                ExceptionUtils.getStructuredErrorString(e1), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
+            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, actionTitle,
+                ExceptionUtils.getStructuredErrorString(e1), NotificationType.ERROR));
         }
     }
 
@@ -43,13 +42,13 @@ class CleanRemotePatchesAction extends AnAction {
         public void run() {
             try {
                 runner.rmdir();
-                Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
-                    runner.processDirectory + " cleaned", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
+                Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, actionTitle,
+                    runner.processDirectory + " cleaned", NotificationType.INFORMATION));
 
             } catch (Exception e1) {
                 e1.printStackTrace();
-                Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, actionTitle,
-                    ExceptionUtils.getStructuredErrorString(e1), NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
+                Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, actionTitle,
+                    ExceptionUtils.getStructuredErrorString(e1), NotificationType.ERROR));
             }
         }
     }

@@ -16,12 +16,12 @@ import static org.sanchouss.idea.plugins.instantpatch.Checks.SLASH_LINUX_STYLE;
  * SFTP can not work with aliases like '~'. Need to provide full path
  */
 public class RemoteProcessSftpPatcher {
-    final String processDirectory;
+    final String ftpDirectory;
     final RemoteClient remoteClient;
 
-    public RemoteProcessSftpPatcher(RemoteClient remoteClient, String processDir) {
-        Checks.checkEndsWithSlash(processDir);
-        this.processDirectory = processDir;
+    public RemoteProcessSftpPatcher(RemoteClient remoteClient, String ftpDir) {
+        Checks.checkEndsWithSlash(ftpDir);
+        this.ftpDirectory = ftpDir;
         this.remoteClient = remoteClient;
     }
 
@@ -30,11 +30,11 @@ public class RemoteProcessSftpPatcher {
     }
 
     public void cd() throws SftpException {
-        remoteClient.arrangeSftpCommand(sftp -> sftp.cd(processDirectory), "Can not cd into " + processDirectory);
+        remoteClient.arrangeSftpCommand(sftp -> sftp.cd(ftpDirectory), "Can not cd into " + ftpDirectory);
     }
 
     public void mkdir() throws SftpException {
-        mkdir(processDirectory);
+        mkdir(ftpDirectory);
     }
 
     public void mkdir(String directory) throws SftpException {
@@ -47,9 +47,9 @@ public class RemoteProcessSftpPatcher {
     public void mkdir(String directory, HashSet<String> existAlready) throws SftpException {
         remoteClient.arrangeSftpCommand(sftp -> {
             String pwd = sftp.pwd();
-            System.out.println("Making directory " + directory + " at path " + processDirectory + " (pwd=" + pwd + ")");
+            System.out.println("Making directory " + directory + " at path " + ftpDirectory + " (pwd=" + pwd + ")");
             makeSubDir(sftp, directory, 0, existAlready);
-        }, "Can not mkdir " + processDirectory);
+        }, "Can not mkdir " + ftpDirectory);
     }
 
     private void makeSubDir(ChannelSftp sftp, String directory, int index, HashSet<String> existAlready) throws SftpException {
@@ -97,7 +97,7 @@ public class RemoteProcessSftpPatcher {
                 toRemoteDirectory += SLASH_LINUX_STYLE;
 
 
-            String src = fromLocalDirectory + file, dst = processDirectory + toRemoteDirectory + file;
+            String src = fromLocalDirectory + file, dst = ftpDirectory + toRemoteDirectory + file;
             System.out.println("Copying " + src + " -> " + dst);
             remoteClient.arrangeSftpCommand(sftp -> sftp.put(src, dst, ChannelSftp.OVERWRITE),
                 "Can not copy file " + src + " -> " + dst);

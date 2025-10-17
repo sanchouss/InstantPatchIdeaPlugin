@@ -1,8 +1,7 @@
 package org.sanchouss.idea.plugins.instantpatch.actions;
 
-import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClient;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Constraints;
+import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClient;
 import org.sanchouss.idea.plugins.instantpatch.settings.Process;
 
 /**
@@ -24,10 +23,5 @@ class ProcessActionGroup extends com.intellij.openapi.actionSystem.DefaultAction
         final CopyFilesToRemotePathActionGroup copyFiles = new CopyFilesToRemotePathActionGroup(remoteClient,
             process.getRemoteDirectories(), process.getTemporaryDirectory());
         add(copyFiles);
-    }
-
-    @Override
-    public void actionPerformed(AnActionEvent anActionEvent) {
-
     }
 }

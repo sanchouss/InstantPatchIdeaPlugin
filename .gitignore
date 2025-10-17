@@ -17,6 +17,7 @@ hs_err_pid*
 .idea/**
 
 out/
+build/
 
 InstantPatchIdeaPlugin.zip
 instantPatchConfig.xml

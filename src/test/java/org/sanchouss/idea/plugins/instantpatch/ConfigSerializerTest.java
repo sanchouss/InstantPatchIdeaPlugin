@@ -1,9 +1,9 @@
 package org.sanchouss.idea.plugins.instantpatch;
 
+import org.junit.Test;
 import org.sanchouss.idea.plugins.instantpatch.settings.Configuration;
 import org.sanchouss.idea.plugins.instantpatch.settings.Host;
 import org.sanchouss.idea.plugins.instantpatch.settings.Process;
-import org.junit.Test;
 
 import javax.xml.bind.JAXBException;
 import java.util.ArrayList;
@@ -24,61 +24,64 @@ public class ConfigSerializerTest {
         } catch (JAXBException e) {
             e.printStackTrace();
         }
-
     }
 
     static Configuration createSampleConfig() {
 
-        String classFilesDir = "/home/sanchouss/patches/";
-        String tempDir = "/home/sanchouss/tmp/";
-        ArrayList<String> etcFilesDirs = new ArrayList<>(Arrays.asList("/usr/bin/", "/var/lib/"));
+        String classFilesDir = "/home/instantpatch/classes/";
+        String tempDir = "/home/instantpatch/tmp_ftp/";
+        ArrayList<String> etcFilesDirs = new ArrayList<>(Arrays.asList("/usr/bin/", "/var/lib/", "/home/instantpatch/resources/"));
 
-        ArrayList<Process> alist = new ArrayList<>();
+        ProcList genProcList = (String name) ->
         {
-            Process proc = new Process();
-            proc.setProcessName("server-process1");
-            proc.setProcessDirectory("/usr/bin/");
-            proc.setProcessStartCommand("server-process1 start");
-            proc.setProcessStopCommand("server-process1 stop");
-            proc.setClassFilesDirectory(classFilesDir);
-            proc.setRemoteDirectories(etcFilesDirs);
-            proc.setTemporaryDirectory(tempDir);
-            alist.add(proc);
-        }
-        {
-            Process proc = new Process();
-            proc.setProcessName("server-process2");
-            proc.setProcessDirectory("/usr/bin/");
-            proc.setProcessStartCommand("server-process2 start");
-            proc.setProcessStopCommand("server-process2 stop");
-            proc.setClassFilesDirectory(classFilesDir);
-            proc.setRemoteDirectories(etcFilesDirs);
-            proc.setTemporaryDirectory(tempDir);
-            alist.add(proc);
-        }
+            ArrayList<Process> res = new ArrayList<>();
+            {
+                Process proc = new Process();
+                proc.setProcessName(name + ".myservice");
+                proc.setProcessDirectory("/home/instantpatch/myservice/");
+                proc.setProcessStartCommand("systemctl --user start myservice.service");
+                proc.setProcessStopCommand("systemctl --user stop myservice.service");
+                proc.setClassFilesDirectory(classFilesDir);
+                proc.setRemoteDirectories(etcFilesDirs);
+                proc.setTemporaryDirectory(tempDir);
+                res.add(proc);
+            }
+            {
+                Process proc = new Process();
+                proc.setProcessName(name + ".server-process");
+                proc.setProcessDirectory("/usr/bin/");
+                proc.setProcessStartCommand("server-process start");
+                proc.setProcessStopCommand("server-process stop");
+                proc.setClassFilesDirectory(classFilesDir);
+                proc.setRemoteDirectories(etcFilesDirs);
+                proc.setTemporaryDirectory(tempDir);
+                res.add(proc);
+            }
+            return res;
+        };
 
         ArrayList<Host> hlist = new ArrayList<>();
         {
-            String username = "sanchouss";
-            String hostname = "hosta";
+            String username = "instantpatch";
+            String hostname = "host.a";
 
             Host host = new Host();
             host.setHostname(hostname);
             host.setUsername(username);
 
-            host.setProcesses(alist);
+            host.setProcesses(genProcList.gen("a"));
 
             hlist.add(host);
         }
         {
-            String username = "sanchouss";
-            String hostname = "hostb";
+            String username = "instantpatch";
+            String hostname = "host.b";
 
             Host host = new Host();
             host.setHostname(hostname);
             host.setUsername(username);
 
-            host.setProcesses(alist);
+            host.setProcesses(genProcList.gen("b"));
 
             hlist.add(host);
         }
@@ -89,4 +92,8 @@ public class ConfigSerializerTest {
         return conf;
     }
 
+    @FunctionalInterface
+    interface ProcList {
+        ArrayList<Process> gen(String name);
+    }
 }

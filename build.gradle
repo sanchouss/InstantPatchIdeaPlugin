@@ -1,46 +1,69 @@
+// See https://github.com/JetBrains/gradle-intellij-plugin/
+// Using Gradle IntelliJ Plugin (1.x)
+
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '0.4.21'
-    id 'org.jetbrains.changelog' version '0.4.0'
+    id 'org.jetbrains.intellij' version '1.17.4'
+    id 'org.jetbrains.changelog' version '2.4.0'
 }
 
-group 'org.sanchouss.idea.plugins.instantpatch'
-version '0.0.7-SNAPSHOT'
+group = 'org.sanchouss.idea.plugins.instantpatch'
+version = '0.0.8-SNAPSHOT'
+
+intellij {
+    version.set("2023.1")
+    type.set("IC")
+    plugins = ['java']
+}
 
 repositories {
     mavenCentral()
-    jcenter()
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
 }
 
-
-buildSearchableOptions {
-    jvmArgs '--add-exports=java.base/jdk.internal.vm=ALL-UNNAMED'
+test {
+    enabled = false // tests are not run to save build time
 }
 
-runIde {
-    jvmArgs '--add-exports', 'java.base/jdk.internal.vm=ALL-UNNAMED'
+tasks.named("buildSearchableOptions") {
+    enabled = false // to save build time
 }
+
+// reason was lost ...
+//buildSearchableOptions {
+//    jvmArgs '--add-exports=java.base/jdk.internal.vm=ALL-UNNAMED'
+//}
+//runIde {
+//    jvmArgs '--add-exports', 'java.base/jdk.internal.vm=ALL-UNNAMED'
+//}
 
 dependencies {
-    compile('org.slf4j:slf4j-api:1.7.21')
-    compile('com.jcraft:jsch:0.1.54')
-    compile('javax.xml.bind:jaxb-api:2.3.0')
-    implementation('com.intellij:openapi:6.0.5')
+    implementation('com.github.mwiede:jsch:2.27.3')
+//    implementation('com.jcraft:jsch:0.1.55')  // abandoned, do not support modern auth methods
+//    implementation('org.slf4j:slf4j-api:1.7.25')      // todo: remove
+//    implementation('javax.xml.bind:jaxb-api:2.3.0')   // don't; this would cause two classloaders' conflict when debugging plugin
+//    implementation('com.intellij:openapi:7.0.3')  // don't; this would cause two classloaders' conflict when debugging plugin
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation('junit:junit:4.13.2')
 }
 
-// See https://github.com/JetBrains/gradle-intellij-plugin/
-intellij {
-    version '2020.1.2'
-}
 patchPluginXml {
-    changeNotes """
-      - Fixing plugin verification results; move to gradle plugin"""
+    sinceBuild.set("231") // IDE build number, JavaVersion.VERSION_17 limits to higher than 221
+    untilBuild.set("241.*") // Gradle IntelliJ Plugin 1.x does not support building plugins against the IntelliJ Platform 2024.2+ (242+).
+    changeNotes.set("""
+        <ul>
+            <li>Fix build with `Gradle IntelliJ Plugin (1.x)` plugin</li>
+            <li>Replace deprecated interfaces with newer ones</li>
+            <li>Replace abandoned original jsch library with maintained fork</li>
+        </ul>
+    """)
+
 }
+

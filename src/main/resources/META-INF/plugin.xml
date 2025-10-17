@@ -1,7 +1,6 @@
 <idea-plugin>
   <id>org.sanchouss.idea.plugins.instantpatch</id>
   <name>Instant Patch Remote Java Process</name>
-  <version>0.0.7</version>
   <vendor email="sanchouss@github.com" url="http://github.com/sanchouss">Alexander Perepelkin</vendor>
 
   <description><![CDATA[
@@ -9,14 +8,15 @@
       via secure channels<br>
     ]]></description>
 
-  <change-notes><![CDATA[
-      0.0.7 Fixing plugin verification results
-      0.0.6 Informative error messages when connect to remote server fails
-    ]]>
-  </change-notes>
+<!--  <change-notes><![CDATA[-->
+<!--      0.0.7 Fixing plugin verification results-->
+<!--      0.0.6 Informative error messages when connect to remote server fails-->
+<!--    ]]>-->
+<!--  </change-notes>-->
 
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="193"/>
+<!--  Service is introduced later than 193 -->
+<!--  <idea-version since-build="193"/>-->
 
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
@@ -26,9 +26,19 @@
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.modules.xml</depends>
 
+<!--  not working... -->
+<!--  <extensions defaultExtensionNs="com.intellij">
+    <startupActivity implementation="org.sanchouss.idea.plugins.instantpatch.InstantPatchRemoteStartupActivity"/>
+  </extensions>-->
+
   <extensions defaultExtensionNs="com.intellij">
-    <applicationService serviceImplementation="org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginService"/>
+    <postStartupActivity implementation="org.sanchouss.idea.plugins.instantpatch.InstantPatchRemoteStartupActivity"/>
   </extensions>
+
+<!--  wrong? -->
+<!--  <extensions defaultExtensionNs="com.intellij">-->
+<!--    <applicationService serviceImplementation="org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginService"/>-->
+<!--  </extensions>-->
 
 <!--  <application-components>
     &lt;!&ndash; Add your application components here &ndash;&gt;
@@ -38,19 +48,25 @@
     </component>
   </application-components>-->
 
-  <project-components>
-    <!-- Add your project components here -->
-  </project-components>
+<!--  <project-components>
+    &lt;!&ndash; Add your project components here &ndash;&gt;
+  </project-components>-->
 
-  <applicationListeners>
+  <!-- InstantPatchRemoteAppLifecycleListener has been compiled by a more recent version of the Java Runtime (class file version 61.0), -->
+<!--  <applicationListeners>
     <listener class="org.sanchouss.idea.plugins.instantpatch.InstantPatchRemoteAppLifecycleListener" topic="com.intellij.ide.AppLifecycleListener"/>
-  </applicationListeners>
+  </applicationListeners>-->
 
-  <projectListeners>
-    <listener class="org.sanchouss.idea.plugins.instantpatch.InstantPatchRemoteAppLifecycleListener" topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>
-  </projectListeners>
+<!--  <projectListeners>-->
+<!--    <listener class="org.sanchouss.idea.plugins.instantpatch.InstantPatchRemoteAppLifecycleListener" topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>-->
+<!--  </projectListeners>-->
+
+<!--  <extensions defaultExtensionNs="com.intellij">-->
+<!--    <projectManagerListener projectOpened="org.sanchouss.idea.plugins.instantpatch.InstantPatchRemoteProjectListener"/>-->
+<!--  </extensions>-->
 
   <actions>
+<!-- Actions are generated dynamically -->
 <!--
     Always getting:
     ERROR - nSystem.impl.ActionManagerImpl - class with name 'org.sanchouss.idea.plugins.instantpatch.actions.DumbAction' must be an instance of 'com.intellij.openapi.actionSystem.AnAction'; got org.sanchouss.idea.plugins.instantpatch.actions.DumbAction@6e9c7a5a [Plugin: org.sanchouss.idea.plugins.instantpatch]

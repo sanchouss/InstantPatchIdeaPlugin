@@ -9,10 +9,9 @@ import com.jcraft.jsch.ChannelShell;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
-import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginRegistration;
-import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettings;
+import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginService;
+import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettingsState;
 import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettingsCallback;
-import org.sanchouss.idea.plugins.instantpatch.util.ExceptionUtils;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
@@ -64,17 +63,17 @@ public class RemoteClientProxy implements RemoteClient {
 
     private void connect(RemoteAuth remoteAuth) {
         try {
-            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Connecting",
-                "Connecting to host " + getHost() + " ...", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
+            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, "Connecting",
+                "Connecting to host " + getHost() + " ...", NotificationType.INFORMATION));
             actual.set(new RemoteClientImpl(host, user, port, remoteAuth));
-            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Connecting",
-                "Connected to host " + getHost() + " ok", NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
+            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, "Connecting",
+                "Connected to host " + getHost() + " ok", NotificationType.INFORMATION));
         } catch (Exception e) {
             exception.set(e);
             e.printStackTrace();
-            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginRegistration.notificationGroupId, "Connecting",
-                "Connecting to host " + getHost() + " failed: " + ExceptionUtils.getStructuredErrorString(e),
-                NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER));
+            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, "Connecting",
+                "Connecting to host " + getHost() + " failed: " + e.getMessage(),
+                NotificationType.ERROR));
         }
     }
 
@@ -154,8 +153,8 @@ public class RemoteClientProxy implements RemoteClient {
     @Override
     public void arrangeSftpCommand(SftpCommand<ChannelSftp> sftpCommand, String errorMsg) {
         if (!isConnectedWell()) {
-            final PluginSettings pluginSettings = pluginSettingsCallback.getPluginSettings(false);
-            reconnect(new RemoteAuth(pluginSettings.privateKeyFile, pluginSettings.passphrase));
+            final PluginSettingsState pluginSettingsState = pluginSettingsCallback.getPluginSettings(false);
+            reconnect(new RemoteAuth(pluginSettingsState.privateKeyFile, pluginSettingsState.passphrase));
         }
 
         try {
@@ -169,8 +168,8 @@ public class RemoteClientProxy implements RemoteClient {
     @Override
     public void arrangeShellCommand(ShellCommand<ChannelShell> shellCommand, String errorMsg) {
         if (!isConnectedWell()) {
-            final PluginSettings pluginSettings = pluginSettingsCallback.getPluginSettings(false);
-            reconnect(new RemoteAuth(pluginSettings.privateKeyFile, pluginSettings.passphrase));
+            final PluginSettingsState pluginSettingsState = pluginSettingsCallback.getPluginSettings(false);
+            reconnect(new RemoteAuth(pluginSettingsState.privateKeyFile, pluginSettingsState.passphrase));
         }
 
         try {

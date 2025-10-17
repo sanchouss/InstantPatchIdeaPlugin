@@ -18,8 +18,8 @@ public interface RemoteClient {
 
     void disconnect();
 
-    default RemoteProcessSftpPatcher createPatcher(String processDir) {
-        RemoteProcessSftpPatcher rpp = new RemoteProcessSftpPatcher(this, processDir);
+    default RemoteProcessSftpPatcher createPatcher(String ftpDir) {
+        RemoteProcessSftpPatcher rpp = new RemoteProcessSftpPatcher(this, ftpDir);
         return rpp;
     }
 
