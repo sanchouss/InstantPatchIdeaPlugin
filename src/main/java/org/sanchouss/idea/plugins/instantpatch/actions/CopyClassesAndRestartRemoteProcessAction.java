@@ -18,7 +18,6 @@ class CopyClassesAndRestartRemoteProcessAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
-        super.update(anActionEvent);
         try {
             copy.actionPerformed(anActionEvent);
             restart.actionPerformed(anActionEvent);

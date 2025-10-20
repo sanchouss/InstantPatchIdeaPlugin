@@ -27,7 +27,6 @@ class CleanRemotePatchesAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
-        super.update(anActionEvent);
         try {
             remoteClient.enqueue(new CleanRemotePatchesCommand());
         } catch (Exception e1) {

@@ -29,7 +29,6 @@ class RestartRemoteProcessAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
-        super.update(anActionEvent);
         try {
             remoteClient.enqueue(new RestartRemoteProcessCommand());
         } catch (Exception e1) {

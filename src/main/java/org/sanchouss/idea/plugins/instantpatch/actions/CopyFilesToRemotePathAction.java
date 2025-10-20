@@ -48,8 +48,6 @@ class CopyFilesToRemotePathAction extends AnAction {
     }
 
     public void actionPerformed(AnActionEvent e) {
-        super.update(e);
-
         try {
             final VirtualFile[] files = e.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY);
             final LinkedList<VirtualFile> filesToCopy = new LinkedList<>(Arrays.asList(files));
