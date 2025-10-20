@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'org.sanchouss.idea.plugins.instantpatch'
-version = '0.0.8-SNAPSHOT'
+version = '0.0.9-SNAPSHOT'
 
 intellij {
     version.set("2023.1")
@@ -46,6 +46,7 @@ tasks.named("buildSearchableOptions") {
 
 dependencies {
     implementation('com.github.mwiede:jsch:2.27.3')
+    compileOnly('javax.xml.bind:jaxb-api:2.3.1')  // moved out of JDK since Java 9. Alt is shadowing with plugin 'com.github.johnrengelman.shadow'
 //    implementation('com.jcraft:jsch:0.1.55')  // abandoned, do not support modern auth methods
 //    implementation('org.slf4j:slf4j-api:1.7.25')      // todo: remove
 //    implementation('javax.xml.bind:jaxb-api:2.3.0')   // don't; this would cause two classloaders' conflict when debugging plugin
