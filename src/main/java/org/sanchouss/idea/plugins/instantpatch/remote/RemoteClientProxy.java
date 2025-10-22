@@ -19,9 +19,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Proxies actual RemoteClientImpl,
- * After connection is established, delegating to actual RemoteClientImpl becomes possible
- * Tries to reconnect
+ * Proxies actual RemoteClientImpl. Substitutes real clients in menu items, allowing to mimic remote client,
+ * but postponing connecting to remote host until it is requested.
+ * After connection is established, delegating calls to actual RemoteClientImpl becomes possible.
+ * Tries to reconnect if connection is broken.
  * <p>
  * Created by Alexander Perepelkin
  */
@@ -56,10 +57,6 @@ public class RemoteClientProxy implements RemoteClient {
         connect(remoteAuth);
     }
 
-//    private void delayedConnect(RemoteAuth remoteAuth) {
-//        executorService.submit(() -> connect(remoteAuth));
-//    }
-
     private void connect(RemoteAuth remoteAuth) {
         try {
             Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, "Connecting",
@@ -77,7 +74,8 @@ public class RemoteClientProxy implements RemoteClient {
     }
 
     private RuntimeException getRuntimeException() {
-        throw (exception.get() == null) ? new RuntimeException("Connection to host " + host + " is not established yet")
+        return (exception.get() == null)
+                ? new RuntimeException("Connection to host " + host + " is not established yet")
                 : new RuntimeException("Error while establishing the connection: " + exception.get().getMessage(), exception.get());
     }
 
@@ -150,7 +148,7 @@ public class RemoteClientProxy implements RemoteClient {
             sftpCommand.accept(this.getChannelSftp());
         } catch (SftpException e) {
             exception.set(e);
-            throw new RuntimeException("SFTP error: " + e + "; " + errorMsg, e);
+            throw new RuntimeException("SFTP error: " + e.getMessage() + "; " + errorMsg, e);
         }
     }
 
@@ -162,9 +160,9 @@ public class RemoteClientProxy implements RemoteClient {
 
         try {
             shellCommand.accept(this.getChannelShell());
-        } catch (SftpException e) {
+        } catch (Exception e) {
             exception.set(e);
-            throw new RuntimeException("Shell error: " + e + "; " + errorMsg, e);
+            throw new RuntimeException("Shell error: " + e.getMessage() + "; " + errorMsg, e);
         }
     }
 

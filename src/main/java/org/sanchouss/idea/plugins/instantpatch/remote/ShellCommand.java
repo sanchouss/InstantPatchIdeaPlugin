@@ -8,5 +8,5 @@ import com.jcraft.jsch.SftpException;
  */
 @FunctionalInterface
 public interface ShellCommand<T> {
-    void accept(T t) throws SftpException;
+    void accept(T t);
 }

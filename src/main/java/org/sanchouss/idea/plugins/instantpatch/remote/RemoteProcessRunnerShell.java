@@ -28,7 +28,7 @@ public class RemoteProcessRunnerShell {
 
     public void exec(String cmdToRun) throws IOException {
 
-        remoteClient.arrangeShellCommand(sh -> {
+        remoteClient.arrangeShellCommand(chanShell -> {
             System.out.println("EXEC: " + "Executing command: " + cmdToRun);
             // send the cmd to channel, do not wait for the response here
             remoteClient.sendShellCommand(cmdToRun, 3000);

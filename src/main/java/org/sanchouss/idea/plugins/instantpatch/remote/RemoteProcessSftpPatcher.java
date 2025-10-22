@@ -29,11 +29,11 @@ public class RemoteProcessSftpPatcher {
     }
 
     public void cd(String dir) throws SftpException {
-        remoteClient.arrangeSftpCommand(sftp -> sftp.cd(dir), "Can not cd into " + dir);
+        remoteClient.arrangeSftpCommand(chanSftp -> chanSftp.cd(dir), "Can not cd into " + dir);
     }
 
     public void cd() throws SftpException {
-        remoteClient.arrangeSftpCommand(sftp -> sftp.cd(ftpDirectory), "Can not cd into " + ftpDirectory);
+        remoteClient.arrangeSftpCommand(chanSftp -> chanSftp.cd(ftpDirectory), "Can not cd into " + ftpDirectory);
     }
 
     public void mkdir() throws SftpException {
@@ -83,7 +83,7 @@ public class RemoteProcessSftpPatcher {
 
     public void chmod(int perm, String file) throws SftpException {
         System.out.println("Chmod " + perm + " on " + file);
-        remoteClient.arrangeSftpCommand(sftp -> sftp.chmod(perm, file), "Can not chmod perm " + perm + " on file "
+        remoteClient.arrangeSftpCommand(chanSftp -> chanSftp.chmod(perm, file), "Can not chmod perm " + perm + " on file "
             + file);
     }
 
@@ -102,7 +102,7 @@ public class RemoteProcessSftpPatcher {
 
             String src = fromLocalDirectory + file, dst = ftpDirectory + toRemoteDirectory + file;
             System.out.println("Copying " + src + " -> " + dst);
-            remoteClient.arrangeSftpCommand(sftp -> sftp.put(src, dst, ChannelSftp.OVERWRITE),
+            remoteClient.arrangeSftpCommand(chanSftp -> chanSftp.put(src, dst, ChannelSftp.OVERWRITE),
                 "Can not copy file " + src + " -> " + dst);
         }
     }

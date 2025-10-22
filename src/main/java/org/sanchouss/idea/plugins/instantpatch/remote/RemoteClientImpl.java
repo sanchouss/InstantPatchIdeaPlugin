@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Establishes session to remote host and opens sftp and shell channels.
- *
+ * <p>
  * Created by Alexander Perepelkin
  */
 public class RemoteClientImpl implements RemoteClient {
@@ -22,8 +22,8 @@ public class RemoteClientImpl implements RemoteClient {
     private final ChannelSftp channelSftp;
     private final ChannelShell channelShell;
 
-    private final PipedOutputStream pipedOutputStreamCommandsToRemote;
-    private final PrintStream pipedOutputStreamCommandsToRemotePrinter;
+    private final PipedOutputStream pipedOutputStreamCommandsToRemote;  // to stream commands to the channel
+    private final PrintStream pipedOutputStreamCommandsToRemotePrinter;     // to print commands to the channel
     private final ThreadInputStreamReader inputShellReader;
     private final ThreadInputStreamReader errorShellReader;
 
@@ -39,6 +39,7 @@ public class RemoteClientImpl implements RemoteClient {
         }
     }
 
+    // Once created, immediately connects to remote
     public RemoteClientImpl(String host, String user, int port, RemoteAuth remoteAuth) throws JSchException, IOException {
         this.host = host;
         this.user = user;
@@ -46,7 +47,7 @@ public class RemoteClientImpl implements RemoteClient {
 
         this.jsch = new JSch();
         jsch.addIdentity(remoteAuth.privateKeyFile, StringUtil.isEmpty(remoteAuth.passphrase) ?
-            null : remoteAuth.passphrase);
+                null : remoteAuth.passphrase);
 
         session = jsch.getSession(user, host, port);
         System.out.println("session created.");
@@ -59,10 +60,9 @@ public class RemoteClientImpl implements RemoteClient {
         try {
             session.connect();
         } catch (JSchException e) {
-            // new JSchException("Can not connect Jsch session: ", e); seems to be outdated api
-            throw new RuntimeException("Can not connect Jsch session: ", e);
+            throw new RuntimeException("Can not connect Jsch session: " + e.getMessage(), e);
         }
-        System.out.println("session connected.....");
+        System.out.println("Jsch session connected.....");
 
         try {
             Channel channel = session.openChannel("sftp");
@@ -70,24 +70,10 @@ public class RemoteClientImpl implements RemoteClient {
 //            channel.setOutputStream(System.out);
             channel.connect();
             channelSftp = (ChannelSftp) channel;
-            System.out.println("sftp channel connected....");
+            System.out.println("Jsch sftp channel connected.");
         } catch (JSchException e) {
-//            throw new JSchException("Can not connect sftp channel: ", e); seems to be outdated api
-            throw new RuntimeException("Can not connect sftp channel: ", e);
+            throw new RuntimeException("Can not connect sftp channel: " + e.getMessage(), e);
         }
-
-        /*
-            few tests
-
-        String pwd = channelSftp.pwd();
-        Vector<ChannelSftp.LsEntry> ls = channelSftp.ls(".");
-        System.out.println(pwd);
-        System.out.println(ls);
-
-        */
-//            String fileName = "test.txt";
-//            channelSftp.put(fileName, "./in/");
-        System.out.println("ftp connected");
 
         try {
             Channel channel = session.openChannel("shell");
@@ -132,13 +118,10 @@ public class RemoteClientImpl implements RemoteClient {
                 }.start();
             }
 */
-            {
-                pipedOutputStreamCommandsToRemote = new PipedOutputStream();
-                PipedInputStream pipedInputStreamCommandsToRemote = new PipedInputStream(pipedOutputStreamCommandsToRemote);
-                pipedOutputStreamCommandsToRemotePrinter = new PrintStream(pipedOutputStreamCommandsToRemote);
-
-                channel.setInputStream(pipedInputStreamCommandsToRemote);
-            }
+            pipedOutputStreamCommandsToRemote = new PipedOutputStream();
+            pipedOutputStreamCommandsToRemotePrinter = new PrintStream(pipedOutputStreamCommandsToRemote);
+            PipedInputStream pipedInputStreamCommandsToRemote = new PipedInputStream(pipedOutputStreamCommandsToRemote);
+            channel.setInputStream(pipedInputStreamCommandsToRemote);
 
             channelShell = (ChannelShell) channel;
             InputStream[] channelShellInputs = new InputStream[]{channelShell.getInputStream(), channelShell.getExtInputStream()};
@@ -149,10 +132,9 @@ public class RemoteClientImpl implements RemoteClient {
             errorShellReader.start();
 
             channelShell.connect(1000);
-            System.out.println("shell connected");
+            System.out.println("Jsch shell channel connected.");
         } catch (JSchException e) {
-//            throw new JSchException("Can not connect sftp channel: ", e); seems to be outdated api
-            throw new RuntimeException("Can not connect Jsch shell channel: ", e);
+            throw new RuntimeException("Can not connect Jsch shell channel: " + e.getMessage(), e);
         }
     }
 
@@ -172,11 +154,13 @@ public class RemoteClientImpl implements RemoteClient {
     private class ThreadInputStreamReader extends Thread {
         private final String prefix;
         private final InputStream inputStream;
+
         public ThreadInputStreamReader(String name, String prefix, InputStream inputStream) {
             super(name);
             this.prefix = prefix;
             this.inputStream = inputStream;
         }
+
         @Override
         public void run() {
             try {
@@ -225,9 +209,11 @@ public class RemoteClientImpl implements RemoteClient {
         waitForReply.set(waitForRemoteReply);
         sendShellCommand(cmdToRun);
         try {
-            waitForRemoteReply.latch.await(waitForReplyForMillis, TimeUnit.MILLISECONDS);
+            boolean replyInTime = waitForRemoteReply.latch.await(waitForReplyForMillis, TimeUnit.MILLISECONDS);
+            if (!replyInTime)
+                throw new RuntimeException("No reply to shell command received after " + waitForReplyForMillis + " " + TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Wait for the reply to shell command is interrupted: " + e.getMessage(), e);
         }
     }
 
@@ -236,7 +222,7 @@ public class RemoteClientImpl implements RemoteClient {
         try {
             sftpCommand.accept(channelSftp);
         } catch (SftpException e) {
-            throw new RuntimeException("SFTP error: " + e + "; " + errorMsg, e);
+            throw new RuntimeException("SFTP command error: " + e.getMessage() + "; " + errorMsg, e);
         }
     }
 
@@ -244,8 +230,8 @@ public class RemoteClientImpl implements RemoteClient {
     public void arrangeShellCommand(ShellCommand<ChannelShell> shellCommand, String errorMsg) {
         try {
             shellCommand.accept(channelShell);
-        } catch (SftpException e) {
-            throw new RuntimeException("Shell error: " + e + "; " + errorMsg, e);
+        } catch (Exception e) {
+            throw new RuntimeException("Shell command error: " + e.getMessage() + "; " + errorMsg, e);
         }
     }
 }

@@ -37,6 +37,7 @@ public class RemoteOperationRootGroup extends com.intellij.openapi.actionSystem.
     }
 
     void composeActions() {
+        // todo: disconnect all the remote clients assigned to the menu items and previously used
         removeAll();
 
         configPath = pluginSettingsState.configFile;
