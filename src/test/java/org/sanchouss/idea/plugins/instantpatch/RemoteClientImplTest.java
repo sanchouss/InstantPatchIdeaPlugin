@@ -20,7 +20,7 @@ public class RemoteClientImplTest {
         System.out.println("RemoteClientImpl client to be tested...");
         RemoteClientImpl impl = new RemoteClientImpl(host, user, 22,
             new RemoteAuth(privateKey, passphrase));
-        impl.sendShellCommand("pwd");
+        impl.sendShellCommand("pwd", 1000);
         Thread.sleep(500);
         impl.disconnect();
         System.out.println("RemoteClientImpl is tested ok");

@@ -115,16 +115,6 @@ public class RemoteClientProxy implements RemoteClient {
     }
 
     @Override
-    public void sendShellCommand(String cmdToRun) {
-        RemoteClientImpl client = actual.get();
-        if (client != null) {
-            client.sendShellCommand(cmdToRun);
-        } else {
-            throw getRuntimeException();
-        }
-    }
-
-    @Override
     public void sendShellCommand(String cmdToRun, int waitForReplyForMillis) {
         RemoteClientImpl client = actual.get();
         if (client != null) {

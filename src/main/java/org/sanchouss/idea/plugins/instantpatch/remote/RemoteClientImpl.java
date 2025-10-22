@@ -198,16 +198,11 @@ public class RemoteClientImpl implements RemoteClient {
     }
 
     @Override
-    public void sendShellCommand(String cmdToRun) {
-        pipedOutputStreamCommandsToRemotePrinter.println(cmdToRun);
-        pipedOutputStreamCommandsToRemotePrinter.flush();
-    }
-
-    @Override
     public void sendShellCommand(String cmdToRun, int waitForReplyForMillis) {
         final WaitForRemoteReply waitForRemoteReply = new WaitForRemoteReply(new CountDownLatch(1), waitForReplyForMillis);
         waitForReply.set(waitForRemoteReply);
-        sendShellCommand(cmdToRun);
+        pipedOutputStreamCommandsToRemotePrinter.println(cmdToRun);
+        pipedOutputStreamCommandsToRemotePrinter.flush();
         try {
             boolean replyInTime = waitForRemoteReply.latch.await(waitForReplyForMillis, TimeUnit.MILLISECONDS);
             if (!replyInTime)

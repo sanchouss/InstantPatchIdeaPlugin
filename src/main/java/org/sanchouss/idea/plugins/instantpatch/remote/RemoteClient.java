@@ -13,15 +13,12 @@ public interface RemoteClient {
     Session getSession();
 
     // send simple string command
-    void sendShellCommand(String cmdToRun);
-
-    // send simple string command
     void sendShellCommand(String cmdToRun, int waitForReplyForMillis);
 
-    // send command as lambda
+    // send command as lambda, may include few commands and logic
     void arrangeSftpCommand(SftpCommand<ChannelSftp> sftpCommand, String errorMsg);
 
-    // send command as lambda
+    // send command as lambda, may include few commands and logic
     void arrangeShellCommand(ShellCommand<ChannelShell> shellCommand, String errorMsg);
 
     // wrappers over the client
