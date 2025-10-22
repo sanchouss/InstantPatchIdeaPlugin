@@ -12,6 +12,7 @@ import com.jcraft.jsch.SftpException;
 import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginService;
 import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettingsState;
 import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettingsCallback;
+import org.sanchouss.idea.plugins.instantpatch.util.ExceptionUtils;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
@@ -70,7 +71,7 @@ public class RemoteClientProxy implements RemoteClient {
             exception.set(e);
             e.printStackTrace();
             Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, "Connecting",
-                    "Connecting to host " + getHost() + " failed: " + e.getMessage(),
+                    "Connecting to host " + getHost() + " failed: " + ExceptionUtils.getStructuredErrorString(e),
                     NotificationType.ERROR));
         }
     }

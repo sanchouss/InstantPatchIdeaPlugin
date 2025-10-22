@@ -24,8 +24,9 @@ public class InstantPatchRemoteStartupActivity implements StartupActivity.DumbAw
 public class InstantPatchRemoteStartupActivity implements ProjectActivity {
     /**
      * This routes messages through IntelliJ's logging system, which you can view in:
-     * Help > Show Log in Explorer/Finder
+     * Help > Show Log in Explorer/Finder (e.g., ~/.cache/JetBrains/IdeaIC2024.1/log)
      * or idea.log in the sandbox dir (/logs/idea.log, <project-root>/build/idea-sandbox/system/log/idea.log)
+     *
      */
     private static final Logger logger = Logger.getInstance(InstantPatchRemoteStartupActivity.class.getName());
 

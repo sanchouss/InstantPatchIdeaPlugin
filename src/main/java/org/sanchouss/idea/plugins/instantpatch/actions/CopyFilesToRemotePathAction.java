@@ -114,7 +114,7 @@ class CopyFilesToRemotePathAction extends AnAction {
             } catch (Exception e1) {
                 e1.printStackTrace();
                 Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, actionTitle,
-                    e1.getMessage(), NotificationType.ERROR));
+                    ExceptionUtils.getStructuredErrorString(e1), NotificationType.ERROR));
             }
 
         }
