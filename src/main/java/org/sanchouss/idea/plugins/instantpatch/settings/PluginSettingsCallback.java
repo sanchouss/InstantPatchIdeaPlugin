@@ -18,6 +18,7 @@ public class PluginSettingsCallback {
         pluginSettingsState.passphrase = null;
     }
 
+    // mayAskPassphrase = true for EDT thread, false otherwise
     public PluginSettingsState getPluginSettings(boolean mayAskPassphrase) {
         if (pluginSettingsState.privateKeyFile == null) {
             throw new RuntimeException("Private key file path is not set up");

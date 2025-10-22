@@ -8,6 +8,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Constraints;
 import org.sanchouss.idea.plugins.instantpatch.ConfigSerializer;
 import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginService;
+import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClientLongRunningCommands;
 import org.sanchouss.idea.plugins.instantpatch.settings.Configuration;
 import org.sanchouss.idea.plugins.instantpatch.settings.Host;
 import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettingsCallback;
@@ -60,8 +61,10 @@ public class RemoteOperationRootGroup extends com.intellij.openapi.actionSystem.
         Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, "Loading " + InstantPatchRemotePluginService.shortName,
             "Config " + configPath + " is read", NotificationType.INFORMATION));
 
+        PluginSettingsCallback pluginSettingsCallback = new PluginSettingsCallback(pluginSettingsState);
+        RemoteClientLongRunningCommands.getInstance().setPluginSettingsCallback(pluginSettingsCallback);
         for (final Host host : config.getHosts()) {
-            AnAction action = new HostActionGroup(host, new PluginSettingsCallback(pluginSettingsState));
+            AnAction action = new HostActionGroup(host, pluginSettingsState);
             add(action);
 //            Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, "Loading " + InstantPatchRemotePluginService.shortName,
 //                "Host action " + host.getHostname() + " is created", NotificationType.INFORMATION));

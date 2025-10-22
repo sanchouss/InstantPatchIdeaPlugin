@@ -11,6 +11,9 @@ import static org.sanchouss.idea.plugins.instantpatch.Checks.SLASH_LINUX_STYLE;
 
 
 /**
+ * Wrapper over the remote client.
+ * Provides api for ftp commands
+ *
  * Created by Alexander Perepelkin
  *
  * SFTP can not work with aliases like '~'. Need to provide full path

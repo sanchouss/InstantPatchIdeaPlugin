@@ -15,6 +15,7 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginService;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClient;
+import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClientLongRunningCommands;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessRunnerShell;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessSftpPatcher;
 import org.sanchouss.idea.plugins.instantpatch.settings.Process;
@@ -134,7 +135,7 @@ class CopyClassesToRemoteAction extends AnAction {
                                 allowedResources.stream().map(s -> "*" + s).collect(Collectors.joining(", ")),
                         NotificationType.WARNING));
             } else {
-                remoteClient.enqueue(new CopyClassesToRemoteCommand(jobs));
+                RemoteClientLongRunningCommands.getInstance().enqueue(remoteClient, new CopyClassesToRemoteCommand(jobs));
             }
         } catch (Exception e1) {
             e1.printStackTrace();

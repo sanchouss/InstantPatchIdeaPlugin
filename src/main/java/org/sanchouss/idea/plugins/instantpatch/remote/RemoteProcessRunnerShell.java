@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.util.HashSet;
 
 /**
+ * Wrapper over the remote client.
+ * Provides api for shell commands
+ *
  * Uses same 'shell' channel for all commands.
  *
  * Created by Alexander Perepelkin

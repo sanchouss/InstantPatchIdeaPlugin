@@ -10,6 +10,7 @@ import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClient;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessRunnerShell;
 import org.sanchouss.idea.plugins.instantpatch.settings.Process;
 import org.sanchouss.idea.plugins.instantpatch.util.ExceptionUtils;
+import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClientLongRunningCommands;
 
 /**
  * Created by Alexander Perepelkin
@@ -30,7 +31,7 @@ class RestartRemoteProcessAction extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
         try {
-            remoteClient.enqueue(new RestartRemoteProcessCommand());
+            RemoteClientLongRunningCommands.getInstance().enqueue(remoteClient, new RestartRemoteProcessCommand());
         } catch (Exception e1) {
             e1.printStackTrace();
             Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, actionTitle,
@@ -50,7 +51,7 @@ class RestartRemoteProcessAction extends AnAction {
             } catch (Exception e1) {
                 e1.printStackTrace();
                 Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, actionTitle,
-                    ExceptionUtils.getStructuredErrorString(e1), NotificationType.ERROR));
+                    e1.getMessage(), NotificationType.ERROR));
             }
         }
     }

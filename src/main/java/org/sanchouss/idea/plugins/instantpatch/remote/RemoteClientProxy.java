@@ -19,9 +19,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Proxies actual RemoteClientImpl,
- * <p>
- * Puts connections to the hosts in the queue in the separate thread.
  * After connection is established, delegating to actual RemoteClientImpl becomes possible
+ * Tries to reconnect
  * <p>
  * Created by Alexander Perepelkin
  */
@@ -31,16 +30,15 @@ public class RemoteClientProxy implements RemoteClient {
     private final String host;
     private final String user;
     private final int port;
-    private final PluginSettingsCallback pluginSettingsCallback;
-    private final ExecutorService executorService;
+    // PPK, passphrase may change due to user input
+    private final PluginSettingsState pluginSettingsState;
 
-    public RemoteClientProxy(String host, String user, int port, PluginSettingsCallback pluginSettingsCallback, ExecutorService executorService)
-        throws IOException, JSchException, SftpException, InterruptedException {
+    public RemoteClientProxy(String host, String user, int port, PluginSettingsState pluginSettingsState)
+            throws IOException, JSchException, SftpException, InterruptedException {
         this.host = host;
         this.user = user;
         this.port = port;
-        this.pluginSettingsCallback = pluginSettingsCallback;
-        this.executorService = executorService;
+        this.pluginSettingsState = pluginSettingsState;
     }
 
     public RemoteClientImpl getActualRemoteClient() {
@@ -64,25 +62,25 @@ public class RemoteClientProxy implements RemoteClient {
     private void connect(RemoteAuth remoteAuth) {
         try {
             Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, "Connecting",
-                "Connecting to host " + getHost() + " ...", NotificationType.INFORMATION));
+                    "Connecting to host " + getHost() + " ...", NotificationType.INFORMATION));
             actual.set(new RemoteClientImpl(host, user, port, remoteAuth));
             Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, "Connecting",
-                "Connected to host " + getHost() + " ok", NotificationType.INFORMATION));
+                    "Connected to host " + getHost() + " ok", NotificationType.INFORMATION));
         } catch (Exception e) {
             exception.set(e);
             e.printStackTrace();
             Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, "Connecting",
-                "Connecting to host " + getHost() + " failed: " + e.getMessage(),
-                NotificationType.ERROR));
+                    "Connecting to host " + getHost() + " failed: " + e.getMessage(),
+                    NotificationType.ERROR));
         }
     }
 
     private RuntimeException getRuntimeException() {
         throw (exception.get() == null) ? new RuntimeException("Connection to host " + host + " is not established yet")
-            : new RuntimeException("Error while establishing the connection: " + exception.get().getMessage(), exception.get());
+                : new RuntimeException("Error while establishing the connection: " + exception.get().getMessage(), exception.get());
     }
 
-    public ChannelSftp getChannelSftp() {
+    private ChannelSftp getChannelSftp() {
         RemoteClientImpl client = actual.get();
         if (client != null) {
             return client.getChannelSftp();
@@ -90,7 +88,7 @@ public class RemoteClientProxy implements RemoteClient {
         throw getRuntimeException();
     }
 
-    public ChannelShell getChannelShell() {
+    private ChannelShell getChannelShell() {
         RemoteClientImpl client = actual.get();
         if (client != null) {
             return client.getChannelShell();
@@ -115,15 +113,6 @@ public class RemoteClientProxy implements RemoteClient {
         } else {
             throw getRuntimeException();
         }
-    }
-
-    /**
-     * Should only be run from event dispatch thread!
-     */
-    @Override
-    public void enqueue(Runnable command) {
-        pluginSettingsCallback.getPluginSettings(true);
-        executorService.submit(command);
     }
 
     @Override
@@ -153,7 +142,6 @@ public class RemoteClientProxy implements RemoteClient {
     @Override
     public void arrangeSftpCommand(SftpCommand<ChannelSftp> sftpCommand, String errorMsg) {
         if (!isConnectedWell()) {
-            final PluginSettingsState pluginSettingsState = pluginSettingsCallback.getPluginSettings(false);
             reconnect(new RemoteAuth(pluginSettingsState.privateKeyFile, pluginSettingsState.passphrase));
         }
 
@@ -168,7 +156,6 @@ public class RemoteClientProxy implements RemoteClient {
     @Override
     public void arrangeShellCommand(ShellCommand<ChannelShell> shellCommand, String errorMsg) {
         if (!isConnectedWell()) {
-            final PluginSettingsState pluginSettingsState = pluginSettingsCallback.getPluginSettings(false);
             reconnect(new RemoteAuth(pluginSettingsState.privateKeyFile, pluginSettingsState.passphrase));
         }
 

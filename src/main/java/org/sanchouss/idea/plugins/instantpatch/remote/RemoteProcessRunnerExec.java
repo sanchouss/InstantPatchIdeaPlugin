@@ -10,6 +10,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
+ * Wrapper over the remote client.
+ * Provides api for shell commands
+ *
  * Establishes new 'exec' channel for every command.
  *
  * Created by Alexander Perepelkin

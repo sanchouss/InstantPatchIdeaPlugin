@@ -214,11 +214,6 @@ public class RemoteClientImpl implements RemoteClient {
     }
 
     @Override
-    public void enqueue(Runnable command) {
-        command.run();
-    }
-
-    @Override
     public void sendShellCommand(String cmdToRun) {
         pipedOutputStreamCommandsToRemotePrinter.println(cmdToRun);
         pipedOutputStreamCommandsToRemotePrinter.flush();

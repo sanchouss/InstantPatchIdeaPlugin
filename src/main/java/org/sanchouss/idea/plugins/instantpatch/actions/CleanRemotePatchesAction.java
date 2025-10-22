@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginService;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClient;
+import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClientLongRunningCommands;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessRunnerShell;
 import org.sanchouss.idea.plugins.instantpatch.settings.Process;
 import org.sanchouss.idea.plugins.instantpatch.util.ExceptionUtils;
@@ -28,7 +29,7 @@ class CleanRemotePatchesAction extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
         try {
-            remoteClient.enqueue(new CleanRemotePatchesCommand());
+            RemoteClientLongRunningCommands.getInstance().enqueue(remoteClient, new CleanRemotePatchesCommand());
         } catch (Exception e1) {
             e1.printStackTrace();
             Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, actionTitle,

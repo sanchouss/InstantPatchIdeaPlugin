@@ -36,7 +36,6 @@ public class PluginSettingsActionGroup extends com.intellij.openapi.actionSystem
         add(new PluginSettingsPrivateKeyFilePathActionGroup());
     }
 
-
     class PluginSettingsConfigFilePathActionGroup extends com.intellij.openapi.actionSystem.DefaultActionGroup {
 
         PluginSettingsConfigFilePathActionGroup(RemoteOperationRootGroup rootGroup) {

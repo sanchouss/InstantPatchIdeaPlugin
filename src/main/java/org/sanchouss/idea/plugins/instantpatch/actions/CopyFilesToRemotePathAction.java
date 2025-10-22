@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginService;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClient;
+import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClientLongRunningCommands;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessRunnerShell;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessSftpPatcher;
 import org.sanchouss.idea.plugins.instantpatch.util.ExceptionUtils;
@@ -52,7 +53,7 @@ class CopyFilesToRemotePathAction extends AnAction {
             final VirtualFile[] files = e.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY);
             final LinkedList<VirtualFile> filesToCopy = new LinkedList<>(Arrays.asList(files));
 
-            remoteClient.enqueue(new CopyFilesToRemotePathCommand(filesToCopy));
+            RemoteClientLongRunningCommands.getInstance().enqueue(remoteClient, new CopyFilesToRemotePathCommand(filesToCopy));
         } catch (Exception e1) {
             e1.printStackTrace();
             Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, actionTitle,

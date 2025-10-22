@@ -17,12 +17,12 @@ import org.sanchouss.idea.plugins.instantpatch.util.ExceptionUtils;
  */
 class ReconnectToHostAction extends AnAction {
     private static final String actionTitle = "Reconnecting to remote host";
-    private final PluginSettingsCallback pluginSettingsCallback;
+    private final PluginSettingsState pluginSettingsState;
     private final RemoteClientProxy remoteClientProxy;
 
-    public ReconnectToHostAction(PluginSettingsCallback pluginSettingsCallback, RemoteClientProxy remoteClientProxy) {
+    public ReconnectToHostAction(PluginSettingsState pluginSettingsState, RemoteClientProxy remoteClientProxy) {
         super("Reconnect to host");
-        this.pluginSettingsCallback = pluginSettingsCallback;
+        this.pluginSettingsState = pluginSettingsState;
         this.remoteClientProxy = remoteClientProxy;
     }
 
@@ -30,13 +30,16 @@ class ReconnectToHostAction extends AnAction {
 
         try {
             System.out.println("Reconnecting to host " + remoteClientProxy.getHost());
+            PluginSettingsCallback pluginSettingsCallback = new PluginSettingsCallback(pluginSettingsState);
             pluginSettingsCallback.clearPassphrase();
-            final PluginSettingsState pluginSettingsState = pluginSettingsCallback.getPluginSettings(true);
+            pluginSettingsCallback.getPluginSettings(true);
+
+            // possibly long operation as well, can be enqueued instead of running in EDT
             remoteClientProxy.reconnect(new RemoteAuth(pluginSettingsState.privateKeyFile, pluginSettingsState.passphrase));
         } catch (Exception e1) {
             e1.printStackTrace();
             Notifications.Bus.notify(new Notification(InstantPatchRemotePluginService.notificationGroupId, actionTitle,
-                    ExceptionUtils.getStructuredErrorString(e1), NotificationType.ERROR));
+                    e1.getMessage(), NotificationType.ERROR));
         }
     }
 

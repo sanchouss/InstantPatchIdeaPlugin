@@ -101,7 +101,8 @@ public class RemoteClientImplTestSuite {
             Thread.sleep(100);
             patcher.chmod(0744, toRemoteDirectory + reset_sh);
 
-            RemoteProcessRunnerExec runner = rc.createRunnerExec(processdir + toRemoteDirectory);
+            RemoteProcessRunnerExec runner = new RemoteProcessRunnerExec(rc, processdir + toRemoteDirectory);
+
             runner.restart();
 
 //            rc.channelShell.setInputStream(System.in);

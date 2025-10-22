@@ -12,20 +12,22 @@ import com.jcraft.jsch.Session;
 public interface RemoteClient {
     Session getSession();
 
+    // send simple string command
+    void sendShellCommand(String cmdToRun);
+
+    // send simple string command
+    void sendShellCommand(String cmdToRun, int waitForReplyForMillis);
+
+    // send command as lambda
     void arrangeSftpCommand(SftpCommand<ChannelSftp> sftpCommand, String errorMsg);
 
+    // send command as lambda
     void arrangeShellCommand(ShellCommand<ChannelShell> shellCommand, String errorMsg);
 
-    void disconnect();
-
+    // wrappers over the client
     default RemoteProcessSftpPatcher createPatcher(String ftpDir) {
         RemoteProcessSftpPatcher rpp = new RemoteProcessSftpPatcher(this, ftpDir);
         return rpp;
-    }
-
-    default RemoteProcessRunnerExec createRunnerExec(String processDir) {
-        RemoteProcessRunnerExec rpr = new RemoteProcessRunnerExec(this, processDir);
-        return rpr;
     }
 
     default RemoteProcessRunnerShell createRunnerShell(String processDir, String processName) {
@@ -33,9 +35,5 @@ public interface RemoteClient {
         return rpr;
     }
 
-    void enqueue(Runnable command);
-
-    void sendShellCommand(String cmdToRun);
-
-    void sendShellCommand(String cmdToRun, int waitForReplyForMillis);
+    void disconnect();
 }
