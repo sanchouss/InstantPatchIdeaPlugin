@@ -1,23 +1,21 @@
 // See https://github.com/JetBrains/gradle-intellij-plugin/
-// Using Gradle IntelliJ Plugin (1.x)
+// Using Gradle IntelliJ Plugin (2.x)
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '1.17.4'
+    id 'org.jetbrains.intellij.platform' version '2.10.2'
     id 'org.jetbrains.changelog' version '2.4.0'
 }
 
 group = 'org.sanchouss.idea.plugins.instantpatch'
 version = '0.0.9-SNAPSHOT'
 
-intellij {
-    version.set("2023.1")
-    type.set("IC")
-    plugins = ['java']
-}
-
 repositories {
     mavenCentral()
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
 
 java {
@@ -37,12 +35,12 @@ tasks.named("buildSearchableOptions") {
 }
 
 // reason was lost ...
-//buildSearchableOptions {
-//    jvmArgs '--add-exports=java.base/jdk.internal.vm=ALL-UNNAMED'
-//}
-//runIde {
-//    jvmArgs '--add-exports', 'java.base/jdk.internal.vm=ALL-UNNAMED'
-//}
+// buildSearchableOptions {
+//     jvmArgs '--add-exports=java.base/jdk.internal.vm=ALL-UNNAMED'
+// }
+// runIde {
+//     jvmArgs '--add-exports', 'java.base/jdk.internal.vm=ALL-UNNAMED'
+// }
 
 dependencies {
     implementation('com.github.mwiede:jsch:2.27.3')
@@ -52,19 +50,25 @@ dependencies {
 //    implementation('javax.xml.bind:jaxb-api:2.3.0')   // don't; this would cause two classloaders' conflict when debugging plugin
 //    implementation('com.intellij:openapi:7.0.3')  // don't; this would cause two classloaders' conflict when debugging plugin
 
-    testImplementation('junit:junit:4.13.2')
+    intellijPlatform {
+        testFramework TestFrameworkType.Platform.INSTANCE
+    }
+    testImplementation 'junit:junit:4.13.2'
+
+    intellijPlatform {
+        intellijIdeaCommunity '2025.2'
+        bundledPlugin 'com.intellij.java'
+    }
 }
 
 patchPluginXml {
     sinceBuild.set("231") // IDE build number, JavaVersion.VERSION_17 limits to higher than 221
-    untilBuild.set("241.*") // Gradle IntelliJ Plugin 1.x does not support building plugins against the IntelliJ Platform 2024.2+ (242+).
+    untilBuild.set("252.*")
     changeNotes.set("""
         <ul>
-            <li>Fix build with `Gradle IntelliJ Plugin (1.x)` plugin</li>
-            <li>Replace deprecated interfaces with newer ones</li>
-            <li>Replace abandoned original jsch library with maintained fork</li>
+            <li>Compact notifications about network connection events</li>
+            <li>Migrate to `Gradle IntelliJ Plugin (2.x)`</li>
+            <li>Fix plugin verification issues</li>
         </ul>
     """)
-
 }
-
