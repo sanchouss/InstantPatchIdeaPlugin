@@ -18,7 +18,7 @@ import static org.sanchouss.idea.plugins.instantpatch.JschCredentials.*;
 public class JschLibraryTest {
 
     @Test
-    public void testJschLibConnection() throws InterruptedException, SftpException, JSchException, IOException, URISyntaxException {
+    public void testJschLibConnection() throws InterruptedException, JSchException, IOException, URISyntaxException {
 
         System.out.println("jsch client to be tested...");
         JSch jsch = new JSch();

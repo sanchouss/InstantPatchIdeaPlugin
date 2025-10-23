@@ -18,10 +18,10 @@ import static org.sanchouss.idea.plugins.instantpatch.JschCredentials.*;
  * Created by Alexander Perepelkin
  */
 public class RemoteClientImplTestSuite {
-    private String homedir = "/home/instantpatch/work/";
-    private String processdir = homedir + "tmp/process1/";
-    private String toRemoteDirectory = "com/company/";
-    private RemoteAuth remoteAuth = new RemoteAuth(privateKey, passphrase);
+    private final String homedir = "/home/instantpatch/work/";
+    private final String processdir = homedir + "tmp/process1/";
+    private final String toRemoteDirectory = "com/company/";
+    private final RemoteAuth remoteAuth = new RemoteAuth(privateKey, passphrase);
     public static final String reset_sh = "reset.sh";
 
     @Test
@@ -31,16 +31,16 @@ public class RemoteClientImplTestSuite {
 
             Thread.sleep(100);
             {
-                RemoteProcessRunnerShell createRunnerCont = rc.createRunnerShell(homedir, "");
-                createRunnerCont.echo("I expect to get this msg back");
-                createRunnerCont.rmdir();
+                RemoteProcessRunnerShell runnerShell = new RemoteProcessRunnerShell(rc, homedir, "");
+                runnerShell.echo("I expect to get this msg back");
+                runnerShell.rmdir();
             }
 
             {
-                RemoteProcessRunnerShell createRunnerCont = rc.createRunnerShell(homedir, "");
-                createRunnerCont.mkdir("com/test/proc/");
+                RemoteProcessRunnerShell runnerShell = new RemoteProcessRunnerShell(rc, homedir, "");
+                runnerShell.mkdir("com/test/proc/");
                 for (int i = 0; i < 3; ++i) {
-                    createRunnerCont.exec("pwd");
+                    runnerShell.exec("pwd");
                     Thread.sleep(300);
                 }
             }
@@ -59,7 +59,7 @@ public class RemoteClientImplTestSuite {
         try {
             RemoteClient rc = new RemoteClientImpl(host, user, port, remoteAuth);
 
-            RemoteProcessSftpPatcher patcher = rc.createPatcher(processdir);
+            RemoteProcessSftpPatcher patcher = new RemoteProcessSftpPatcher(rc, processdir);
             patcher.mkdir();
             patcher.cd();
             patcher.mkdir(toRemoteDirectory);
@@ -86,7 +86,7 @@ public class RemoteClientImplTestSuite {
         try {
             RemoteClient rc = new RemoteClientImpl(host, user, port, remoteAuth);
 
-            RemoteProcessSftpPatcher patcher = rc.createPatcher(processdir);
+            RemoteProcessSftpPatcher patcher = new RemoteProcessSftpPatcher(rc, processdir);
             patcher.mkdir();
             patcher.cd();
             patcher.mkdir(toRemoteDirectory);
@@ -101,13 +101,8 @@ public class RemoteClientImplTestSuite {
             Thread.sleep(100);
             patcher.chmod(0744, toRemoteDirectory + reset_sh);
 
-            RemoteProcessRunnerExec runner = new RemoteProcessRunnerExec(rc, processdir + toRemoteDirectory);
-
-            runner.restart();
-
-//            rc.channelShell.setInputStream(System.in);
-//            rc.channelShell.setOutputStream(System.out);
-//            rc.channelShellConnect();
+            RemoteProcessRunnerShell runner = new RemoteProcessRunnerShell(rc, processdir + toRemoteDirectory, "testproc");
+            runner.echo("Welcome to shell");
 
             Thread.sleep(100);
             rc.disconnect();

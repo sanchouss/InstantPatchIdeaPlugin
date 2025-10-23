@@ -14,7 +14,7 @@ import java.io.File;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Created by
+ * Created by Alexander Perepelkin
  */
 public class ChooseFileTest {
     @Ignore

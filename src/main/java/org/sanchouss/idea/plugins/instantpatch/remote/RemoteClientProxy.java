@@ -96,15 +96,6 @@ public class RemoteClientProxy implements RemoteClient {
     }
 
     @Override
-    public Session getSession() {
-        RemoteClientImpl client = actual.get();
-        if (client != null) {
-            return client.getSession();
-        }
-        throw getRuntimeException();
-    }
-
-    @Override
     public void disconnect() {
         RemoteClientImpl client = actual.get();
         if (client != null) {

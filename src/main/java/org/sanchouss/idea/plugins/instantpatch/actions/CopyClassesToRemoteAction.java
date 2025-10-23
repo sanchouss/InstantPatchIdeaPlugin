@@ -46,8 +46,8 @@ class CopyClassesToRemoteAction extends AnAction {
     public CopyClassesToRemoteAction(RemoteClient remoteClient, Process process) {
         super("Copy Selected Classes to Remote Directory");
         this.remoteClient = remoteClient;
-        this.patcher = remoteClient.createPatcher(process.getClassFilesDirectory());
-        this.runnerShell = remoteClient.createRunnerShell(process.getClassFilesDirectory(), process.getProcessName());
+        this.patcher = new RemoteProcessSftpPatcher(remoteClient, process.getClassFilesDirectory());
+        this.runnerShell = new RemoteProcessRunnerShell(remoteClient, process.getClassFilesDirectory(), process.getProcessName());
     }
 
     public void actionPerformed(AnActionEvent e) {

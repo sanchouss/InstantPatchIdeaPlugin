@@ -88,9 +88,4 @@ public class RemoteOperationRootGroup extends com.intellij.openapi.actionSystem.
                 throw new RuntimeException(e);
             }
     }
-
-    @Override
-    public void beforeActionPerformedUpdate(AnActionEvent e) {
-        super.beforeActionPerformedUpdate(e);
-    }
 }

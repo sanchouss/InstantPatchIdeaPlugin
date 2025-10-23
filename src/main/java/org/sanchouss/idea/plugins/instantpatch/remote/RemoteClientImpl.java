@@ -146,11 +146,6 @@ public class RemoteClientImpl implements RemoteClient {
         return channelShell;
     }
 
-    @Override
-    public Session getSession() {
-        return session;
-    }
-
     private class ThreadInputStreamReader extends Thread {
         private final String prefix;
         private final InputStream inputStream;

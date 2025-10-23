@@ -44,8 +44,8 @@ class CopyFilesToRemotePathAction extends AnAction {
             remoteDirectory += SLASH_LINUX_STYLE;
         this.remoteDirectory = remoteDirectory;
         this.tmpDir = tempDirectory;
-        this.patcher = remoteClient.createPatcher(tmpDir);
-        this.runner = remoteClient.createRunnerShell("./", "");
+        this.patcher = new RemoteProcessSftpPatcher(remoteClient, tmpDir);
+        this.runner = new RemoteProcessRunnerShell(remoteClient, "./", "");
     }
 
     public void actionPerformed(AnActionEvent e) {

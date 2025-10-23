@@ -19,8 +19,8 @@ import static org.sanchouss.idea.plugins.instantpatch.Checks.SLASH_LINUX_STYLE;
  * SFTP can not work with aliases like '~'. Need to provide full path
  */
 public class RemoteProcessSftpPatcher {
-    final String ftpDirectory;
-    final RemoteClient remoteClient;
+    final private String ftpDirectory;
+    final private RemoteClient remoteClient;
 
     public RemoteProcessSftpPatcher(RemoteClient remoteClient, String ftpDir) {
         Checks.checkEndsWithSlash(ftpDir);

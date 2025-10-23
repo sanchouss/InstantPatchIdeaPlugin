@@ -19,7 +19,7 @@ public class InstantPatchRemoteStartupActivity implements StartupActivity.DumbAw
 
 /**
  * Runs after project is loaded and generates menu actions.
- * Comes with IDEA ver. 2023.1
+ * Comes with IDEA ver. 2023.1, hence supported builds start with "231"
  */
 public class InstantPatchRemoteStartupActivity implements ProjectActivity {
     /**

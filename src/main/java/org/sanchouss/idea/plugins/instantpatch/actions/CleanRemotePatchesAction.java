@@ -23,7 +23,7 @@ class CleanRemotePatchesAction extends AnAction {
     public CleanRemotePatchesAction(RemoteClient remoteClient, Process process) {
         super("Clean Remote Patch Directory");
         this.remoteClient = remoteClient;
-        this.runner = remoteClient.createRunnerShell(process.getClassFilesDirectory(), process.getProcessName());
+        this.runner = new RemoteProcessRunnerShell(remoteClient, process.getClassFilesDirectory(), process.getProcessName());
     }
 
     @Override

@@ -25,7 +25,7 @@ class RestartRemoteProcessAction extends AnAction {
         super("Restart Remote Process");
         this.remoteClient = remoteClient;
         this.process = process;
-        this.runner = remoteClient.createRunnerShell(process.getProcessDirectory(), process.getProcessName());
+        this.runner = new RemoteProcessRunnerShell(remoteClient, process.getProcessDirectory(), process.getProcessName());
     }
 
     @Override
