@@ -1,10 +1,8 @@
 package org.sanchouss.idea.plugins.instantpatch.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
-import org.sanchouss.idea.plugins.instantpatch.Utils;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClientProxy;
 import org.sanchouss.idea.plugins.instantpatch.settings.Host;
-import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettingsCallback;
 import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettingsState;
 import org.sanchouss.idea.plugins.instantpatch.settings.Process;
 

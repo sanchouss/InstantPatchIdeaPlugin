@@ -1,7 +1,5 @@
 package org.sanchouss.idea.plugins.instantpatch.remote;
 
-import com.jcraft.jsch.SftpException;
-
 /**
  *
  * Created by Alexander Perepelkin

@@ -2,7 +2,6 @@ package org.sanchouss.idea.plugins.instantpatch.remote;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelShell;
-import com.jcraft.jsch.Session;
 
 /**
  * Establishes session to remote host and create sftp/shell channels.

@@ -4,7 +4,6 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import com.jcraft.jsch.SftpException;
 import org.junit.Test;
 
 import java.io.IOException;

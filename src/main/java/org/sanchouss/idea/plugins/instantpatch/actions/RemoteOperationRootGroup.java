@@ -4,7 +4,6 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Constraints;
 import org.sanchouss.idea.plugins.instantpatch.ConfigSerializer;
 import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginService;

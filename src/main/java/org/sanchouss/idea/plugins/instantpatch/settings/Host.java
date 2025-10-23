@@ -2,7 +2,6 @@ package org.sanchouss.idea.plugins.instantpatch.settings;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
-import java.lang.*;
 import java.util.ArrayList;
 
 /**

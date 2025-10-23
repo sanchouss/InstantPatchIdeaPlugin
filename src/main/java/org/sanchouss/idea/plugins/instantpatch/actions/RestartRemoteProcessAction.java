@@ -7,10 +7,10 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import org.sanchouss.idea.plugins.instantpatch.InstantPatchRemotePluginService;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClient;
+import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClientLongRunningCommands;
 import org.sanchouss.idea.plugins.instantpatch.remote.RemoteProcessRunnerShell;
 import org.sanchouss.idea.plugins.instantpatch.settings.Process;
 import org.sanchouss.idea.plugins.instantpatch.util.ExceptionUtils;
-import org.sanchouss.idea.plugins.instantpatch.remote.RemoteClientLongRunningCommands;
 
 /**
  * Created by Alexander Perepelkin
