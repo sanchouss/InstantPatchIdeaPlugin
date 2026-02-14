@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'org.sanchouss.idea.plugins.instantpatch'
-version = '0.0.9-SNAPSHOT'
+version = '0.1.0'
 
 repositories {
     mavenCentral()
@@ -65,7 +65,7 @@ dependencies {
 
 patchPluginXml {
     sinceBuild.set("231") // IDE build number, JavaVersion.VERSION_17 limits to higher than 221
-    untilBuild.set("252.*")
+//    untilBuild.set("252.*") // omit for now
     changeNotes.set("""
         <ul>
             <li>Compact notifications about network connection events</li>

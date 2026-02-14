@@ -36,3 +36,6 @@
 - Compact notifications about network connection events
 - Migrate to `Gradle IntelliJ Plugin (2.x)`
 - Fix plugin verification issues
+
+## 0.1.0 - 2026-02-14
+- Fix plugin verification warnings
