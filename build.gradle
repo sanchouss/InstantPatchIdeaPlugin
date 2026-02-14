@@ -44,7 +44,9 @@ tasks.named("buildSearchableOptions") {
 
 dependencies {
     implementation('com.github.mwiede:jsch:2.27.3')
-    compileOnly('javax.xml.bind:jaxb-api:2.3.1')  // moved out of JDK since Java 9. Alt is shadowing with plugin 'com.github.johnrengelman.shadow'
+//    compileOnly('avax.xml.bind:jaxb-api:2.3.1')  // Use javax but DON'T bundle it (to avoid classloaders clash). Pkg is moved out of JDK since Java 9. Alt is shadowing with plugin 'com.github.johnrengelman.shadow'
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.2'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.2'
 //    implementation('com.jcraft:jsch:0.1.55')  // abandoned, do not support modern auth methods
 //    implementation('org.slf4j:slf4j-api:1.7.25')      // todo: remove
 //    implementation('javax.xml.bind:jaxb-api:2.3.0')   // don't; this would cause two classloaders' conflict when debugging plugin

@@ -5,7 +5,7 @@ import org.sanchouss.idea.plugins.instantpatch.settings.Configuration;
 import org.sanchouss.idea.plugins.instantpatch.settings.Host;
 import org.sanchouss.idea.plugins.instantpatch.settings.Process;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -18,8 +18,8 @@ public class ConfigSerializerTest {
     @Test
     public void testWriteReadSampleConfig() {
         Configuration config = createSampleConfig();
-        ConfigSerializer.write(path, config);
         try {
+            ConfigSerializer.write(path, config);
             ConfigSerializer.read(path);
         } catch (JAXBException e) {
             e.printStackTrace();

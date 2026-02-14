@@ -14,7 +14,7 @@ import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettingsCallback;
 import org.sanchouss.idea.plugins.instantpatch.settings.PluginSettingsState;
 import org.sanchouss.idea.plugins.instantpatch.util.ExceptionUtils;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 
 /**
  * Created by Alexander Perepelkin
